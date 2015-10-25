@@ -1,0 +1,41 @@
+
+.link-list {
+  -fx-font-size: 110%;
+}
+
+.link-list .title {
+  -fx-font-weight: bold;
+}
+
+.link-list .link {
+  -fx-font-size: 80%;
+}
+
+.link-list .status {
+  -fx-background-image: url(fetch.png);
+  -fx-background-repeat: no-repeat;
+  -fx-background-position: center;
+}
+
+.link-list .progress {
+  -fx-pref-width: 20;
+  -fx-pref-height: 20;
+  visibility: hidden;
+}
+
+.link-list .cell:selected .progress {
+  -fx-background-color: white;
+  -fx-background-radius: 20;
+}
+
+.link-list .cell:fetching .status {
+  -fx-background-image: none;
+}
+
+.link-list .cell:fetched .status {
+  -fx-background-image: url(fetched.png);
+}
+
+.link-list .cell:fetching .progress {
+  visibility: visible;
+}

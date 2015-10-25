@@ -1,0 +1,22 @@
+
+.splash {
+  -fx-padding: 8; 
+  -fx-background-color: transparent;
+}
+
+.splash .outer {
+  -fx-background-color: transparent;
+}
+
+.splash .container {
+}
+
+.splash .progress {
+  -fx-background: gray;
+  
+  -fx-border: 0;
+}
+
+.splash .text {
+  -fx-alignment: center;
+}
