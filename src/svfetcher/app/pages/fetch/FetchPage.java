@@ -1,6 +1,6 @@
-package svfetcher.app.sv.pages.fetch;
+package svfetcher.app.pages.fetch;
 
-import svfetcher.app.sv.pages.fetch.stated.SectionsStateList;
+import svfetcher.app.pages.fetch.stated.SectionsStateList;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
 import java.util.ArrayList;
@@ -17,8 +17,8 @@ import svfetcher.app.story.Source;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.sv.pages.compose.ComposePage;
-import svfetcher.app.sv.pages.fetch.stated.StatedSource;
+import svfetcher.app.pages.compose.ComposePage;
+import svfetcher.app.pages.fetch.stated.StatedSource;
 
 /**
  *
@@ -52,12 +52,22 @@ public class FetchPage extends AbstractPage {
       for (StatedSource<Source> source : selected)
         story.remove(source.getItem());
     });
-    
+
     Button revoke = new Button("Revoke");
     revoke.setOnAction(h -> showNotification());
     HBox hbox = new HBox(delete, revoke);
     VBox vbox = new VBox(8, list, hbox);
     VBox.setVgrow(list, Priority.ALWAYS);
+//    view.setOnSelect((cell) -> {
+//      if (popOver != null && popOver.isShowing())
+//        popOver.hideImmediately();
+//
+//      Source source = cell.getItem().getItem();
+//      popOver = new LinkPopover();
+//      popOver.setSource(source);
+//      popOver.showNear(cell);
+//    });
+
     return vbox;
   }
 
@@ -71,6 +81,7 @@ public class FetchPage extends AbstractPage {
   protected void ready() {
     setTitle("Fetching...");
     Story story = story();
+//    Story source = navDataAtIndex(0, () -> new Story());
     ObservableList<Source> sources = FXCollections.observableArrayList(story.sections());
     sectionsList = new SectionsStateList(sources);
 

@@ -1,12 +1,12 @@
 package svfetcher.app.sv;
 
 import ankh.http.Request;
+import ankh.http.loading.AbstractURLDocumentFetchTask;
 import ankh.http.loading.HTMLLoader;
 import ankh.http.query.ResourceQuery;
 import ankh.ioc.IoC;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.ioc.exceptions.FactoryException;
-import ankh.zet.http.http.loading.AbstractURLDocumentFetchTask;
 import java.net.URL;
 import org.w3c.dom.Document;
 
@@ -15,19 +15,19 @@ import org.w3c.dom.Document;
  * @author Ankh Zet (ankhzet@gmail.com)
  * @param <Result>
  */
-public class URLFetchTask<Result> extends AbstractURLDocumentFetchTask<Request, Result> {
+public class URLDocumentFetchTask<Result> extends AbstractURLDocumentFetchTask<Request, Result> {
 
   @DependencyInjection()
   protected HTMLLoader loader;
   
   private final ResourceSupplier<Document, Result> supplier;
 
-  public URLFetchTask(Request request, ResourceSupplier<Document, Result> supplier) throws FactoryException {
+  public URLDocumentFetchTask(Request request, ResourceSupplier<Document, Result> supplier) throws FactoryException {
     super(request);
     this.supplier = supplier;
   }
 
-  public URLFetchTask(URL url, ResourceSupplier<Document, Result> supplier) throws FactoryException {
+  public URLDocumentFetchTask(URL url, ResourceSupplier<Document, Result> supplier) throws FactoryException {
     this(IoC.resolve(Request.class, url), supplier);
   }
 

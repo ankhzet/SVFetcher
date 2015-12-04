@@ -1,9 +1,9 @@
-package svfetcher.app.sv.pages.fetch;
+package svfetcher.app.pages.fetch;
 
+import ankh.http.loading.AbstractURLDocumentFetchTask;
 import ankh.http.query.ResourceQuery;
-import ankh.zet.http.http.loading.AbstractURLDocumentFetchTask;
-import svfetcher.app.sv.pages.fetch.stated.StatedSource;
-import svfetcher.app.sv.pages.fetch.stated.SectionsStateList;
+import svfetcher.app.pages.fetch.stated.StatedSource;
+import svfetcher.app.pages.fetch.stated.SectionsStateList;
 import java.util.Optional;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

@@ -1,6 +1,6 @@
-package svfetcher.app.sv.pages.fetch;
+package svfetcher.app.pages.fetch;
 
-import svfetcher.app.sv.pages.fetch.stated.StatedSource;
+import svfetcher.app.pages.fetch.stated.StatedSource;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;

@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.convert;
+package svfetcher.app.pages.convert;
 
 import ankh.utils.Strings;
 import ankh.xml.dom.XMLParser;

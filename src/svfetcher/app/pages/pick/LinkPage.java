@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.pick;
+package svfetcher.app.pages.pick;
 
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
@@ -11,8 +11,8 @@ import org.w3c.dom.Document;
 import svfetcher.app.sv.DocumentFetchTask;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.sv.pages.convert.DocumentPage;
-import svfetcher.app.sv.pages.fetch.FetchPage;
+import svfetcher.app.pages.convert.DocumentPage;
+import svfetcher.app.pages.fetch.FetchPage;
 
 /**
  *
@@ -47,6 +47,12 @@ public class LinkPage extends AbstractPage {
     });
 
     String src = "";
+    src = "https://forums.spacebattles.com/threads/silencio-thread-7-seven-shady-superheroes-support-shipyard-salvage-shenanigans.310566/";
+//    src = "keeper-worm-x-dungeon-keeper.18920";
+//    src = "who-needs-enemies-altpower-taylor-worm.22004";
+//      src = "http://samlib.ru/r/raavasta/hollycow.shtml";
+//      src = "http://samlib.ru/p/plotnikow_sergej_aleksandrowich/propavshaya.shtml";
+
     urlField.setText(src);
 
     return new VBox(

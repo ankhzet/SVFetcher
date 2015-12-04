@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.fetch.stated;
+package svfetcher.app.pages.fetch.stated;
 
 import ankh.ui.lists.stated.StatedItem;
 import svfetcher.app.story.Source;

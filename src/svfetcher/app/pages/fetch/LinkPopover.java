@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.fetch;
+package svfetcher.app.pages.fetch;
 
 import javafx.geometry.Insets;
 import javafx.scene.Node;

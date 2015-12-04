@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.compose;
+package svfetcher.app.pages.compose;
 
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.config.Config;

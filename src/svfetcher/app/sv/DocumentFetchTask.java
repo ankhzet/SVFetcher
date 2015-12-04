@@ -9,7 +9,7 @@ import org.w3c.dom.Document;
  *
  * @author Ankh Zet (ankhzet@gmail.com)
  */
-public class DocumentFetchTask extends URLFetchTask<Document> {
+public class DocumentFetchTask extends URLDocumentFetchTask<Document> {
 
   public DocumentFetchTask(URL url) throws FactoryException {
     super(url, document -> document);

@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.pick;
+package svfetcher.app.pages.pick;
 
 import ankh.http.Response;
 import ankh.http.loading.AbstractURLFetchTask;

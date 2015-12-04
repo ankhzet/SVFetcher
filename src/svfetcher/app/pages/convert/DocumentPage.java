@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.convert;
+package svfetcher.app.pages.convert;
 
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
@@ -16,7 +16,7 @@ import org.xml.sax.SAXException;
 import svfetcher.app.story.Source;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.sv.pages.fetch.FetchPage;
+import svfetcher.app.pages.fetch.FetchPage;
 
 /**
  *

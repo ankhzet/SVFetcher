@@ -8,7 +8,7 @@ import ankh.pages.Page;
 import ankh.utils.Utils;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import svfetcher.app.sv.pages.pick.LinkPage;
+import svfetcher.app.pages.pick.LinkPage;
 import svfetcher.factories.IoCFactoriesRegistrar;
 
 /**

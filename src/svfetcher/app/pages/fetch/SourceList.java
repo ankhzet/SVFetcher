@@ -1,4 +1,4 @@
-package svfetcher.app.sv.pages.fetch;
+package svfetcher.app.pages.fetch;
 
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.util.function.Consumer;
@@ -9,7 +9,7 @@ import javafx.scene.control.ListView;
 import ankh.ui.lists.stated.StatedItem;
 import javafx.scene.control.SelectionMode;
 import svfetcher.app.story.Source;
-import svfetcher.app.sv.pages.fetch.stated.StatedSource;
+import svfetcher.app.pages.fetch.stated.StatedSource;
 
 /**
  *

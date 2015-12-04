@@ -16,10 +16,10 @@ import svfetcher.app.sv.forum.SVParserFactory;
 import svfetcher.app.sv.forum.parser.PostParser;
 import svfetcher.app.sv.forum.parser.StoryParser;
 import svfetcher.app.sv.forum.parser.UserParser;
-import svfetcher.app.sv.pages.compose.ComposePage;
-import svfetcher.app.sv.pages.convert.DocumentPage;
-import svfetcher.app.sv.pages.fetch.FetchPage;
-import svfetcher.app.sv.pages.pick.LinkPage;
+import svfetcher.app.pages.compose.ComposePage;
+import svfetcher.app.pages.convert.DocumentPage;
+import svfetcher.app.pages.fetch.FetchPage;
+import svfetcher.app.pages.pick.LinkPage;
 
 /**
  *
