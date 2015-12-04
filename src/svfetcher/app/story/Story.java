@@ -5,7 +5,7 @@ package svfetcher.app.story;
  * @author Ankh Zet (ankhzet@gmail.com)
  * @param <SectionType>
  */
-public class Story<SectionType extends Section> extends Sections<SectionType> {
+public class Story<SectionType extends Section<?>> extends Sections<SectionType> {
 
   private Author author;
 

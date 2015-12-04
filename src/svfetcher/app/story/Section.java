@@ -48,4 +48,8 @@ public class Section<Content> {
     this.contents = contents;
   }
 
+  public String stringContents() {
+    return contents != null ? contents.toString() : null;
+  }
+
 }
