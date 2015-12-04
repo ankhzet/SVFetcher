@@ -1,140 +1,119 @@
 package svfetcher.app.sv;
 
-import svfetcher.app.sv.forum.Link;
-import ankh.annotations.DependencyInjection;
+import ankh.http.ServerRequest;
+import ankh.http.loading.HTMLLoader;
+import ankh.http.query.DocumentResourceQuery;
+import ankh.ioc.annotations.DependencyInjection;
 import ankh.utils.Strings;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.CharBuffer;
-import java.util.function.Consumer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.parsers.DocumentBuilder;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import svfetcher.app.story.Source;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.sv.html.Cleaner;
-import svfetcher.http.Client;
-import svfetcher.http.RequestQuery;
-import svfetcher.http.Response;
+import svfetcher.app.sv.forum.parser.PostParser;
+import svfetcher.app.sv.forum.parser.StoryParser;
 
 /**
  *
  * @author Ankh Zet (ankhzet@gmail.com)
  */
-public class SV {
-
-  public interface RequestConsumer<Type> {
-
-    void accept(SVRequest request, Type doc);
-
-  }
+public class SV extends HTMLLoader {
 
   @DependencyInjection()
-  protected DocumentBuilder builder;
+  protected StoryParser storyParser;
 
   @DependencyInjection()
-  protected Client httpClient;
+  protected PostParser postParser;
 
-  SVRequest api = new SVRequest();
+  @DependencyInjection()
+  protected ServerRequest api;
 
-  public boolean isSVLink(String link) {
-    if (link.matches("(?i)^https?://.*"))
-      return link.contains(api.apiAddress.toString());
+  public String isSVLink(String link) {
+    if (link == null || (link = link.trim()).isEmpty())
+      return null;
 
-    return true;
-  }
-
-  public Document fetch(SVRequest request, Response response) throws IOException {
-    String content = fetchContents(response.decodedStream());
-    String cleanedHtml = Cleaner.cleanup(content);
-
-    try {
-      return builder.parse(new ByteArrayInputStream(cleanedHtml.getBytes()));
-    } catch (SAXParseException ex) {
-      Strings lines = Strings.explode(cleanedHtml, "\n");
-      System.err.printf("ERR: {{%s}}\n", lines.get(ex.getLineNumber() - 1));
-//      System.err.printf("ERR:\n%s\n\n", cleanedHtml);
-      
-      int i = 0;
-      for (String line : Strings.explode(cleanedHtml, "\n"))
-        System.err.printf("[%3d] %s\n", ++i, line);
-      
-      request.setFailure(ex);
-    } catch (SAXException ex) {
-      request.setFailure(ex);
+    if (link.matches("(?i)^https?://.*")) {
+      Matcher m = Pattern.compile("forums\\..*/threads/([^/#\\?]+)", Pattern.CASE_INSENSITIVE).matcher(link);
+      if (m.find())
+        return m.group(1);
     }
-    return null;
+
+    return link;
   }
 
-  public RequestQuery threadmarks(String threadmarksLink, RequestConsumer<Story> consumer) throws IOException {
-    SVRequest request = api.threadmarks();
-    return request.query(threadmarksLink, readDocument(request, (q, document) -> {
-      if (document == null) {
-        consumer.accept(q, null);
-        return;
-      }
+  public DocumentResourceQuery<Story> threadmarks(String threadLink) {
+    String thread = Strings.trim(threadLink, "/");
 
-      Story story = new Story().parser().fromPage(document.getDocumentElement());
-      story.setBase(threadmarksLink);
-      consumer.accept(q, story);
-    }));
+    String threadSlug = isSVLink(thread);
+    boolean fullUrl = threadSlug != null && !threadSlug.equalsIgnoreCase(thread);
+    if (fullUrl)
+        api.setApiAddress(apiServer(thread));
+
+    ServerRequest request = api.resolve("threads/" + threadSlug + "/threadmarks");
+
+    return query(request, document -> {
+      Story story;
+      if (document == null) {
+        if (!fullUrl)
+          return null;
+
+        DocumentResourceQuery<Story> post = query(api.resolve("threads/" + threadSlug), doc2 -> {
+          if (doc2 == null)
+            return null;
+
+          return storyParser.fromPost(doc2.getDocumentElement());
+        });
+
+        try {
+          story = post.executeQuery();
+          if (story == null) {
+            post.rethrow();
+            return null;
+          }
+        } catch (Exception ex) {
+          request.setFailure(ex);
+          return null;
+        }
+      } else
+        story = storyParser.fromPage(document.getDocumentElement());
+
+      story.setSource(new Source(threadLink));
+
+      return story;
+    });
   }
 
-  public RequestQuery chapter(Link link, RequestConsumer<Post> consumer) throws IOException {
-    String page = postFragment(link.getHref());
+  public DocumentResourceQuery<Post> chapter(Source source) {
+    String postUrl = source.getUrl();
+    if (postUrl.toLowerCase().startsWith("http://"))
+      postUrl = postUrl.replaceAll("^http://", "https://");
 
-    SVRequest request = api.page(page);
-    return request.query(link.getBase(), readDocument(request, (q, document) -> {
-      if (document == null) {
-        consumer.accept(q, null);
-        return;
+    String anchor = postByAnchor(postFragment(postUrl));
+
+    ServerRequest request = api.resolve(postUrl);
+    return query(request, document -> {
+      if (document == null)
+        return null;
+
+      String url = request.getFullUrl().toString();
+      source.setUrl(url);
+
+      String postAnchor = anchor;
+      if (url.contains("#")) {
+        String page = postFragment(url);
+        postAnchor = postByAnchor(page);
       }
 
-      Post post = new Post().parser().fromPage(
+      Post post = postParser.fromPage(
         document.getDocumentElement(),
-        postByAnchor(page)
+        postAnchor,
+        source
       );
 
-      consumer.accept(q, post);
-    }));
-  }
-
-  Consumer<Response> readDocument(SVRequest request, RequestConsumer<Document> consumer) {
-    return (response) -> {
-      if (response == null) {
-        consumer.accept(request, null);
-        return;
-      }
-
-      Document doc = null;
-      try {
-        doc = fetch(request, response);
-      } catch (IOException ex) {
-        request.setFailure(new RuntimeException(ex));
-      }
-
-      consumer.accept(request, doc);
-    };
-  }
-
-  static String fetchContents(InputStream stream) throws IOException {
-    try (Reader r = new InputStreamReader(stream)) {
-      StringBuilder sb = new StringBuilder();
-      CharBuffer buffer = CharBuffer.allocate(1024 * 32);
-      int n;
-      while ((n = r.read(buffer)) >= 0) {
-        buffer.flip();
-        sb.append(buffer);
-      }
-
-      return sb.toString();
-    }
+      return post;
+    });
   }
 
   String postFragment(String pageUrl) {
@@ -147,6 +126,15 @@ public class SV {
     Pattern p1 = Pattern.compile("#(.*)$");
     Matcher m1 = p1.matcher(pageUrl);
     return m1.find() ? m1.group(1) : pageUrl;
+  }
+
+  URL apiServer(String urlString) {
+    try {
+      URL url = new URL(urlString);
+      return new URL(url.getProtocol(), url.getHost(), "/");
+    } catch (MalformedURLException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
 }

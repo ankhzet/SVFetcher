@@ -1,120 +1,88 @@
 package svfetcher.app.sv.pages.fetch;
 
-import ankh.annotations.DependencyInjection;
-import ankh.tasks.CustomTask;
-import java.io.IOException;
-import java.util.concurrent.Semaphore;
+import ankh.http.query.ResourceQuery;
+import ankh.zet.http.http.loading.AbstractURLDocumentFetchTask;
+import svfetcher.app.sv.pages.fetch.stated.StatedSource;
+import svfetcher.app.sv.pages.fetch.stated.SectionsStateList;
+import java.util.Optional;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import svfetcher.app.sv.forum.Link;
+import org.w3c.dom.Document;
+import svfetcher.app.story.Source;
 import svfetcher.app.sv.SV;
-import svfetcher.app.sv.forum.Story;
-import svfetcher.http.RequestQuery;
+import svfetcher.app.sv.forum.Post;
 
 /**
  *
  * @author Ankh Zet (ankhzet@gmail.com)
  */
-public class FetchTask extends CustomTask<Link> {
+public class FetchTask extends AbstractURLDocumentFetchTask<SV, Post> {
 
-  @DependencyInjection()
-  protected SV sv;
+  SectionsStateList sections;
 
-  Story story;
-
-  public FetchTask(Story story) {
-    this.story = story;
-  }
-
-  public Link firstUnfinished() {
-    for (Link link : story.threadmarks())
-      if (!link.isFetched())
-        return link;
-
-    return null;
-  }
-
-  public boolean hasUnfinished() {
-    return firstUnfinished() != null;
+  public FetchTask(SV sv, SectionsStateList sections) {
+    super(sv);
+    this.sections = sections;
   }
 
   @Override
-  protected Link call() throws Exception {
-    Link link = firstUnfinished();
-    if (link != null)
-      fetch(link);
+  protected Post call() throws Exception {
+    Source link = getLink();
+    if (link == null)
+      return null;
 
-    updateProgress(0, 0);
-    done();
+    Post post = super.call();
 
-    return link;
+    updateMessage(String.format("Fetched: %s", link.getName()));
+
+    StatedSource<Source> linkState = sections.stated(link);
+    linkState.setFetched(true);
+
+    return post;
   }
 
-  void fetch(Link link) throws Exception {
-    if (isCancelled())
-      return;
+  @Override
+  protected ResourceQuery<Document, Post> query(SV sv) {
+    return sv.chapter(getLink());
+  }
 
-    setFetchingLink(link);
+  @Override
+  protected String identifier(SV sv) {
+    Source link = getLink();
+    return link == null ? null : link.getName();
+  }
 
-    try {
-      link.setFetching(true);
+  @Override
+  protected void running() {
+    Optional.ofNullable(getLink())
+      .ifPresent(link -> {
+        updateMessage(String.format("Fetch: %s", link));
 
-      updateMessage(String.format("Fetch: %s", link));
-
-      updateProgress(0, 1);
-
-      Semaphore s = new Semaphore(0);
-
-      Thread.sleep(10);
-      RequestQuery q = sv.chapter(link, (request, post) -> {
-        try {
-          updateProgress(1, 1);
-
-          if (post != null)
-            story.setPost(link, post);
-          else
-            throw new RuntimeException("Failed to fetch post " + link, request.getFailure());
-
-          updateMessage(String.format("Fetched: %s", link));
-        } finally {
-          s.release();
-        }
+        StatedSource<Source> linkState = sections.stated(link);
+        linkState.setFetching(true);
       });
-      q.responseProperty().addListener((v, o, n) -> {
-        if (n != null)
-          n.setListener((d, t) -> {
-            if (t < 0)
-              t = (long) (d * 1.8);
+  }
 
-            updateProgress(d, t);
-          });
+  @Override
+  protected void done() {
+    Optional.ofNullable(getLink())
+      .ifPresent(link -> {
+        StatedSource<Source> linkState = sections.stated(link);
+        linkState.setFetching(false);
       });
-
-      s.acquire();
-      
-      Exception thrown = q.getRequest().getFailure();
-      if (thrown != null)
-        throw thrown;
-      
-    } finally {
-      link.setFetching(false);
-    }
   }
 
-  public void setFetchingLink(Link fetchingLink) {
-    fetchingLinkProperty().set(fetchingLink);
+  private SimpleObjectProperty<Source> linkProperty;
+
+  public Source getLink() {
+    return linkProperty().get();
   }
 
-  public Link getFetchingLink() {
-    return fetchingLinkProperty().get();
-  }
+  public ObjectProperty<Source> linkProperty() {
+    if (linkProperty == null)
+      linkProperty = new SimpleObjectProperty<>(this, "link", sections.firstUnfinished());
 
-  private ObjectProperty<Link> fetchingLinkProperty;
-
-  ObjectProperty<Link> fetchingLinkProperty() {
-    if (fetchingLinkProperty == null)
-      fetchingLinkProperty = new SimpleObjectProperty<>(this, "fetchingLink", null);
-    return fetchingLinkProperty;
+    return linkProperty;
   }
 
 }
