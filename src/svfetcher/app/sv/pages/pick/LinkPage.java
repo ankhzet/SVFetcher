@@ -1,16 +1,15 @@
 package svfetcher.app.sv.pages.pick;
 
-import svfetcher.app.sv.pages.fetch.FetchPage;
-import ankh.annotations.DependencyInjection;
+import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
-import ankh.pages.Page;
-import ankh.utils.Utils;
+import java.net.URL;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.action.Action;
 import svfetcher.app.sv.SV;
+import svfetcher.app.sv.forum.Story;
+import svfetcher.app.sv.pages.fetch.FetchPage;
 
 /**
  *
@@ -21,67 +20,58 @@ public class LinkPage extends AbstractPage {
   @DependencyInjection()
   protected SV sv;
 
-  Node node;
   TextField urlField;
-  Button fetchButton;
 
   @Override
-  public String title() {
-    return "Pick url to fetch";
+  public String pathFragment() {
+    return "Link";
   }
 
   @Override
-  public boolean navigateOut(Page to) {
-    return Utils.<Boolean>pass(super.navigateOut(to), (n) -> {
-      if (n) {
-        node = null;
+  public Node buildNode() {
+    urlField = new TextField();
+    urlField.setPromptText("Enter forum thread URL here...");
+    urlField.textProperty().addListener((l, o, url) -> {
+      if (url == null || url.isEmpty()) {
         dissmissNotifier();
+        return;
       }
-      return n;
+
+      notify("Ready to check threadmarks",
+             new Action("Check", h -> fetchLinks(urlField.getText())),
+             new Action("HTML -> FB2", h -> convertPage(urlField.getText()))
+      );
+    });
+
+    String src = "";
+    urlField.setText(src);
+
+    return new VBox(
+      8, urlField);
+  }
+
+  @Override
+  protected void ready() {
+    setTitle("Pick url to fetch");
+  }
+
+  boolean fetchLinks(String url) {
+    return followup((TaskedResultSupplier<Story>) supplier -> {
+      return supplier.get(() -> {
+        String threadSlug = sv.isSVLink(url);
+        if (threadSlug == null)
+          throw new Exception("Can't parse link... Is it pointing at SV thread?");
+
+        return new FetchStoryLinksTask(sv, url);
+      })
+        .setError("Failed to check threadmarks at " + url)
+        .schedule(story -> {
+          proceed(FetchPage.class, story);
+        });
     });
   }
 
-  @Override
-  public Node getNode() {
-    if (node == null) {
-      urlField = new TextField("keeper-worm-x-dungeon-keeper.18920");
-      urlField.setPromptText("Enter forum thread URL here...");
-      urlField.textProperty().addListener((l, o, n) -> {
-        ready();
-      });
-
-      node = new VBox(8, urlField);
-      ready();
-    }
-    return node;
-  }
-
-  void ready() {
-    String url = urlField.getText();
-
-    if (url == null || url.isEmpty()) {
-      dissmissNotifier();
-      return;
-    }
-
-    notify("Ready to check threadmarks", new Action("Check", (h) -> {
-      fetch(urlField.getText());
-    }));
-  }
-
-  void fetch(String url) {
-    Utils.safely(() -> {
-      if (url == null || url.isEmpty() || !sv.isSVLink(url))
-        throw new Exception("Can't parse link... Is it pointing at SV thread?");
-
-      sv.threadmarks(url, (request, story) -> {
-        if (story != null)
-          getNavigator().navigateTo(FetchPage.class, story);
-        else
-          error("Failed to check threadmarks at " + url, request.getFailure());
-      });
-    }, (e) -> {
-      error("Failed to check threadmarks at " + url, e);
+  boolean convertPage(String path) {
     });
   }
 

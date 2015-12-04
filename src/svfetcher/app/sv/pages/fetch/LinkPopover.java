@@ -5,8 +5,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import org.controlsfx.control.PopOver;
-import svfetcher.app.sv.forum.Link;
+import svfetcher.app.story.Source;
 
 /**
  *
@@ -14,7 +15,7 @@ import svfetcher.app.sv.forum.Link;
  */
 public class LinkPopover extends PopOver {
 
-  private Link link;
+  private Source source;
 
   private Pane node;
   private Label nameLabel;
@@ -29,19 +30,23 @@ public class LinkPopover extends PopOver {
     setArrowLocation(PopOver.ArrowLocation.LEFT_CENTER);
   }
 
-  public void setLink(Link link) {
-    this.link = link;
+  public void setSource(Source source) {
+    this.source = source;
 
   }
 
   public void showNear(Node node) {
     setContentNode(getNode());
-    setDetachedTitle("Threadmark: " + link.getName());
+    setDetachedTitle("Section: " + source.getName());
 
-    nameLabel.setText(link.getName());
-    hrefLabel.setText(link.getHref());
+    nameLabel.setText(source.getName());
+    hrefLabel.setText(source.getUrl());
 
     super.show(node);
+  }
+  
+  public void hideImmediately() {
+    hide(Duration.ZERO);
   }
 
   Node getNode() {
@@ -52,7 +57,7 @@ public class LinkPopover extends PopOver {
       node.setPadding(new Insets(8));
       node.setPrefWidth(200);
     }
-    
+
     return node;
   }
 

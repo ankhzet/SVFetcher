@@ -23,6 +23,12 @@
   visibility: hidden;
 }
 
+.link-list .delete {
+  -fx-pref-width: 20;
+  -fx-pref-height: 20;
+  visibility: hidden;
+}
+
 .link-list .cell:selected .progress {
   -fx-background-color: white;
   -fx-background-radius: 20;
@@ -37,5 +43,9 @@
 }
 
 .link-list .cell:fetching .progress {
+  visibility: visible;
+}
+
+.link-list .cell:deleting .delete {
   visibility: visible;
 }

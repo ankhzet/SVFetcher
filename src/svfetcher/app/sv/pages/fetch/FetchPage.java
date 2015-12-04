@@ -1,16 +1,24 @@
 package svfetcher.app.sv.pages.fetch;
 
-import ankh.IoC;
+import svfetcher.app.sv.pages.fetch.stated.SectionsStateList;
+import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
-import ankh.pages.Page;
-import ankh.utils.Utils;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.util.Duration;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import org.controlsfx.control.action.Action;
-import svfetcher.app.sv.forum.Link;
+import svfetcher.app.story.Source;
+import svfetcher.app.sv.SV;
+import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
 import svfetcher.app.sv.pages.compose.ComposePage;
+import svfetcher.app.sv.pages.fetch.stated.StatedSource;
 
 /**
  *
@@ -18,109 +26,122 @@ import svfetcher.app.sv.pages.compose.ComposePage;
  */
 public class FetchPage extends AbstractPage {
 
-  Node node;
+  @DependencyInjection()
+  protected SV sv;
 
   private LinkPopover popOver;
 
   FetchTask fetchTask = null;
 
-  @Override
-  public String title() {
-    return "Fetching...";
-  }
+  SectionsStateList<Source> sectionsList;
 
-  Story story() {
-    return navDataAtIndex(0, () -> new Story());
+  @Override
+  public String pathFragment() {
+    return "Fetching";
   }
 
   @Override
-  public Node getNode() {
-    if (node == null) {
-      LinkList view = new LinkList(FXCollections.observableArrayList(story().threadmarks()));
-      view.setOnSelect((cell) -> {
-        if (popOver != null && popOver.isShowing())
-          popOver.hide(Duration.ZERO);
+  protected Node buildNode() {
+    SourceList list = new SourceList(sectionsList);
 
-        Link link = cell.getItem();
-        popOver = new LinkPopover();
-        popOver.setLink(link);
-        popOver.showNear(cell);
-      });
+    Button delete = new Button("X");
+    delete.setOnAction(h -> {
+      ObservableList<StatedSource<Source>> selected = list.getSelectionModel().getSelectedItems();
+      sectionsList.removeAll(new ArrayList(selected));
+      Story story = story();
+      for (StatedSource<Source> source : selected)
+        story.remove(source.getItem());
+    });
+    
+    Button revoke = new Button("Revoke");
+    revoke.setOnAction(h -> showNotification());
+    HBox hbox = new HBox(delete, revoke);
+    VBox vbox = new VBox(8, list, hbox);
+    VBox.setVgrow(list, Priority.ALWAYS);
+    return vbox;
+  }
 
-      node = view;
+  @Override
+  protected void done() {
+    super.done();
+    _story = null;
+  }
+
+  @Override
+  protected void ready() {
+    setTitle("Fetching...");
+    Story story = story();
+    ObservableList<Source> sources = FXCollections.observableArrayList(story.sections());
+    sectionsList = new SectionsStateList(sources);
+
+    LinkedHashMap<Source, Post> done = new LinkedHashMap<>();
+    for (StatedSource<Source> section : sectionsList) {
+      Post post = story.get(section.getItem());
+      if (post != null) {
+        section.setFetched(post.getContents() != null);
+        done.put(post.getSource(), post);
+      }
     }
 
-    return node;
+    story.clear();
+    story.putAll(done);
+
+    showNotification();
   }
 
-  @Override
-  public boolean navigateIn(Page from, Object... args) {
-    return Utils.pass(super.navigateIn(from, args), (n) -> {
-      if (n)
-        ready();
-      return n;
-    });
+  private Story _story;
+
+  Story story() {
+    if (_story == null) {
+      Story source = navDataAtIndex(0, () -> new Story());
+      _story = new Story();
+      _story.setSource(source.getSource());
+      _story.setTitle(source.getTitle());
+      _story.setAuthor(source.getAuthor());
+      _story.setAnnotation(source.getAnnotation());
+      _story.putAll(source);
+    }
+    return _story;
   }
 
-  @Override
-  public boolean navigateOut(Page to) {
-    return Utils.<Boolean>pass(super.navigateOut(to), (n) -> {
-      if (n && stop()) {
-        dissmissNotifier();
-        node = null;
-        return true;
-      }
-      return false;
-    });
+  void showNotification() {
+    boolean hasUnfinished = sectionsList.hasUnfinished();
+    notify(
+      hasUnfinished ? "Ready to fetch posts" : "All sections checked",
+      new Action(
+        hasUnfinished ? "Fetch" : "Proceed",
+        h -> fetch()
+      )
+    );
   }
 
   boolean fetch() {
-    if (!Utils.safely(() -> {
-      fetchTask = IoC.resolve(new FetchTask(story()));
-    }))
-      return false;
+    if (!sectionsList.hasUnfinished())
+      return complete();
 
-    if (!fetchTask.hasUnfinished()) {
-      done();
-      return true;
-    }
-
-    fetchTask.setOnSucceeded((h) -> {
-      fetch();
+    return followup((TaskedResultSupplier<Post>) supplier -> {
+      return supplier.get(() -> fetchTask = new FetchTask(sv, sectionsList))
+        .setError("Failed to fetch post")
+        .setOnFailed(h -> stop())
+        .setOnCancelled(h -> showNotification())
+        .schedule(post -> {
+          story().addSection(post);
+          fetch();
+        });
     });
-
-    fetchTask.setOnFailed((h) -> {
-      stop();
-    });
-
-    fetchTask.setOnCancelled((h) -> {
-      ready();
-    });
-
-    if (perform(fetchTask)) {
-      dissmissNotifier();
-
-      return true;
-    } else
-      return false;
   }
 
   boolean stop() {
-    return (fetchTask == null) || !fetchTask.isRunning() || fetchTask.isCancelled() || fetchTask.cancel();
+    return (fetchTask == null)
+           || !fetchTask.isRunning()
+           || fetchTask.isCancelled()
+           || fetchTask.cancel();
   }
 
-  void done() {
+  boolean complete() {
     stop();
 
-    getNavigator().navigateTo(ComposePage.class, story());
-  }
-
-  void ready() {
-    notify("Ready to fetch posts", new Action("Fetch", (h) -> {
-      if (fetch())
-//        getNavigator().dissmissNotifier();
-      ;
-    }));
+    return proceed(ComposePage.class, story());
   }
 
 }

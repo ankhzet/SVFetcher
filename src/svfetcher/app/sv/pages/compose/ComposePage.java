@@ -1,9 +1,8 @@
 package svfetcher.app.sv.pages.compose;
 
-import ankh.annotations.DependencyInjection;
+import ankh.ioc.annotations.DependencyInjection;
 import ankh.config.Config;
 import ankh.pages.AbstractPage;
-import ankh.pages.Page;
 import ankh.tasks.RunTask;
 import ankh.utils.D;
 import ankh.utils.Utils;
@@ -12,13 +11,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.controlsfx.control.action.Action;
-import svfetcher.app.sv.fb2.SVStoryFB2Builder;
+import svfetcher.app.fb2.SVStoryFB2Builder;
+import svfetcher.app.fb2.builder.nodes.Node;
 import svfetcher.app.sv.forum.Story;
 
 /**
@@ -33,34 +32,20 @@ public class ComposePage extends AbstractPage {
   @DependencyInjection()
   protected Config config;
 
-  Node node;
-
   @Override
-  public boolean navigateIn(Page from, Object... args) {
-    return Utils.pass(super.navigateIn(from, args), (n) -> {
-      if (n)
-        notify("Ready to save fetched story", new Action("Save", (h) -> {
-          compose();
-        }));
-      return n;
-    });
+  protected javafx.scene.Node buildNode() {
+    return new VBox(8, new Label(story().toString()));
   }
 
   @Override
-  public boolean navigateOut(Page to) {
-    return Utils.pass(super.navigateOut(to), (n) -> {
-      if (n)
-        node = null;
-      return n;
-    });
+  protected void ready() {
+    setTitle("Composing...");
+    notify("Ready to save fetched story", new Action("Save", (h) -> compose()));
   }
 
   @Override
-  public Node getNode() {
-    if (node == null)
-      node = new VBox(8, new Label(story().toString()));
-
-    return node;
+  public String pathFragment() {
+    return "Compose";
   }
 
   Story story() {
@@ -84,14 +69,13 @@ public class ComposePage extends AbstractPage {
     if (to == null)
       return false;
 
-    SVStoryFB2Builder builder = new SVStoryFB2Builder();
-
-    svfetcher.app.sv.fb2.nodes.Node fb2 = builder.has(story, null, "");
-    String contents = fb2.toString();
-
     String pathString = to.getAbsolutePath();
 
     RunTask<Boolean> task = new RunTask<>(String.format("Saving to \"%s\"...", pathString), () -> {
+      SVStoryFB2Builder builder = new SVStoryFB2Builder();
+      Node fb2 = builder.build(story);
+      String contents = fb2.toString();
+
       Files.write(
         to.toPath(),
         contents.getBytes(),
@@ -108,6 +92,7 @@ public class ComposePage extends AbstractPage {
     try {
       if (saved = task.get()) {
         config.set(dirConfigKey, to.getParent());
+
         notify(
           "Successfuly saved to " + pathString,
           new Action("Open", (h) -> open(to))
@@ -150,11 +135,6 @@ public class ComposePage extends AbstractPage {
     } catch (Exception e) {
       error("Failed to open " + file.getAbsolutePath(), e);
     }
-  }
-
-  @Override
-  public String title() {
-    return "Composing...";
   }
 
 }
