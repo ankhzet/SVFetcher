@@ -1,8 +1,8 @@
 package svfetcher.app.sv.forum;
 
-import svfetcher.app.sv.forum.html.NodeSerializer;
+import ankh.xml.dom.serializer.NodeSerializer;
 import org.w3c.dom.Node;
-import svfetcher.app.sv.fb2.FB2Cleaner;
+import svfetcher.app.fb2.FB2Cleaner;
 import svfetcher.app.story.Section;
 
 /**
