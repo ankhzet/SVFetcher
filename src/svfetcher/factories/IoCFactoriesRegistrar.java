@@ -17,6 +17,7 @@ import svfetcher.app.sv.forum.parser.PostParser;
 import svfetcher.app.sv.forum.parser.StoryParser;
 import svfetcher.app.sv.forum.parser.UserParser;
 import svfetcher.app.sv.pages.compose.ComposePage;
+import svfetcher.app.sv.pages.convert.DocumentPage;
 import svfetcher.app.sv.pages.fetch.FetchPage;
 import svfetcher.app.sv.pages.pick.LinkPage;
 
@@ -69,6 +70,7 @@ public class IoCFactoriesRegistrar extends ClassFactory {
     registerClass(LinkPage.class);
     registerClass(FetchPage.class);
     registerClass(ComposePage.class);
+    registerClass(DocumentPage.class);
 
   }
 

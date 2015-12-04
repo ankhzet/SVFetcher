@@ -7,8 +7,11 @@ import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.action.Action;
+import org.w3c.dom.Document;
+import svfetcher.app.sv.DocumentFetchTask;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.Story;
+import svfetcher.app.sv.pages.convert.DocumentPage;
 import svfetcher.app.sv.pages.fetch.FetchPage;
 
 /**
@@ -72,6 +75,17 @@ public class LinkPage extends AbstractPage {
   }
 
   boolean convertPage(String path) {
+    return followup((TaskedResultSupplier<Document>) supplier -> {
+      return supplier.get(() -> {
+        if (path == null || path.isEmpty())
+          throw new Exception("Can't parse link...");
+
+        return new DocumentFetchTask(new URL(path));
+      })
+        .setError("Failed to load page at " + path)
+        .schedule(document -> {
+          proceed(DocumentPage.class, document, path);
+        });
     });
   }
 
