@@ -4,7 +4,7 @@ import svfetcher.app.story.Section;
 import svfetcher.app.story.serialization.fb2.builder.SVStoryFB2Builder;
 import svfetcher.app.story.Story;
 import svfetcher.app.story.serialization.AbstractStorySerializer;
-import svfetcher.app.story.serialization.fb2.builder.nodes.Node;
+import ankh.fb2.nodes.Node;
 
 /**
  *

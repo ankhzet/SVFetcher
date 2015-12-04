@@ -1,9 +1,9 @@
 package svfetcher.app.story.serialization.fb2.builder;
 
-import svfetcher.app.story.serialization.fb2.builder.nodes.Node;
+import ankh.fb2.nodes.Node;
 import ankh.utils.Strings;
 import java.util.HashMap;
-import svfetcher.app.story.serialization.fb2.builder.nodes.ContainerNode;
+import ankh.fb2.nodes.ContainerNode;
 
 /**
  *
