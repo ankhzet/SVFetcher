@@ -1,4 +1,4 @@
-package svfetcher.app.fb2;
+package svfetcher.app.fb2.fix;
 
 import ankh.xml.dom.Node;
 import ankh.xml.dom.XMLParser;
