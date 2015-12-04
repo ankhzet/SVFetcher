@@ -17,51 +17,16 @@ import svfetcher.factories.IoCFactoriesRegistrar;
  */
 public class MainStage extends AbstractMainStage {
 
-//  private static final ImageView image = new ImageView(new Image("/resources/icon16x16.png"));
-//
-//  private Collection<? extends Action> actions = Arrays.asList(
-//          new ActionGroup("Group 1", image, new DummyAction("Action 1.1", image),
-//                          new DummyAction("Action 1.2")),
-//          new ActionGroup("Group 2", image, new DummyAction("Action 2.1"),
-//                          ACTION_SEPARATOR,
-//                          new ActionGroup("Action 2.2", new DummyAction("Action 2.2.1"),
-//                                          new DummyAction("Action 2.2.2")),
-//                          new DummyAction("Action 2.3")),
-//          ACTION_SEPARATOR,
-//          new DummyAction("Action 3", image),
-//          new ActionGroup("Group 4", image, new DummyAction("Action 4.1", image),
-//                          new DummyAction("Action 4.2"))
-//  );
-//
-//  static class DummyAction extends Action {
-//
-//    public DummyAction(String name, Node image) {
-//      super(name);
-//      setGraphic(image);
-//      setEventHandler(ae -> String.format("Action '%s' is executed", getText()));
-//    }
-//
-//    public DummyAction(String name) {
-//      super(name);
-//    }
-//
-//    @Override
-//    public String toString() {
-//      return getText();
-//    }
-//
-//  }
   @DependencyInjection()
   protected SV sv;
 
-//  ToolBar toolbar;
   Breadcrumbs crumbs;
 
   @Override
   public Scene constructScene() {
     return Utils.pass(super.constructScene(), (scene) -> {
       crumbs = new Breadcrumbs();
-      crumbs.setPadding(new Insets(8));
+      crumbs.setPadding(new Insets(0, 0, 8, 0));
       clientArea.setTop(crumbs);
       clientArea.setPrefSize(400, 600);
 
