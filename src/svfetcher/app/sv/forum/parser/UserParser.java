@@ -1,7 +1,7 @@
 package svfetcher.app.sv.forum.parser;
 
 import ankh.utils.Utils;
-import svfetcher.app.sv.html.dom.crawler.Crawler;
+import ankh.xml.dom.crawler.Crawler;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.w3c.dom.Node;

@@ -2,7 +2,7 @@ package svfetcher.app.sv.forum.parser;
 
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.utils.Utils;
-import svfetcher.app.sv.html.dom.crawler.Crawler;
+import ankh.xml.dom.crawler.Crawler;
 import org.w3c.dom.Node;
 import svfetcher.app.story.Source;
 import svfetcher.app.sv.forum.Post;
