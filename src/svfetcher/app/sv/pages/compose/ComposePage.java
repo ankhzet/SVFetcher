@@ -7,8 +7,6 @@ import ankh.tasks.RunTask;
 import ankh.utils.D;
 import ankh.utils.Utils;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javafx.scene.control.ButtonType;
@@ -16,8 +14,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.controlsfx.control.action.Action;
-import svfetcher.app.fb2.SVStoryFB2Builder;
-import svfetcher.app.fb2.builder.nodes.Node;
+import svfetcher.app.serializer.Writer;
+import svfetcher.app.story.serialization.fb2.FB2StorySerializer;
 import svfetcher.app.sv.forum.Story;
 
 /**
@@ -55,11 +53,13 @@ public class ComposePage extends AbstractPage {
   boolean compose() {
     Story story = story();
 
+    FB2StorySerializer serializer = new FB2StorySerializer(story);
+
     FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Fiction Book file", "*.fb2");
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().add(filter);
     chooser.setSelectedExtensionFilter(filter);
-    chooser.setInitialFileName(SVStoryFB2Builder.fileName(story));
+    chooser.setInitialFileName(serializer.filename());
     String dir = config.get(dirConfigKey, "");
     if (!dir.isEmpty() && new File(dir).isDirectory())
       chooser.setInitialDirectory(new File(dir));
@@ -72,15 +72,8 @@ public class ComposePage extends AbstractPage {
     String pathString = to.getAbsolutePath();
 
     RunTask<Boolean> task = new RunTask<>(String.format("Saving to \"%s\"...", pathString), () -> {
-      SVStoryFB2Builder builder = new SVStoryFB2Builder();
-      Node fb2 = builder.build(story);
-      String contents = fb2.toString();
-
-      Files.write(
-        to.toPath(),
-        contents.getBytes(),
-        StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE
-      );
+      Writer writer = new Writer();
+      writer.write(serializer);
 
       return true;
     }).setFailed("Failed to save to " + pathString);
