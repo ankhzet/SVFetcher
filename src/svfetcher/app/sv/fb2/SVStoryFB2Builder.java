@@ -4,18 +4,17 @@ import ankh.utils.Strings;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import svfetcher.app.story.Source;
 import svfetcher.app.sv.fb2.nodes.ContainerContainerNode;
+import svfetcher.app.sv.fb2.nodes.NamedNode;
 import svfetcher.app.sv.fb2.nodes.Node;
 import svfetcher.app.sv.fb2.nodes.body.Body;
 import svfetcher.app.sv.fb2.nodes.body.Section;
 import svfetcher.app.sv.fb2.nodes.common.Date;
 import svfetcher.app.sv.fb2.nodes.common.Id;
 import svfetcher.app.sv.fb2.nodes.common.Title;
-import svfetcher.app.sv.fb2.nodes.description.*;
-import svfetcher.app.sv.forum.Link;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.sv.html.Cleaner;
 
 /**
  *
@@ -24,7 +23,7 @@ import svfetcher.app.sv.html.Cleaner;
 public class SVStoryFB2Builder extends FB2Builder<Story> {
 
   public static String fileName(Story story) {
-    String link = story.getBase();
+    String link = story.getSource().getUrl();
     File f = new File(link);
     while (f.getName().isEmpty())
       f = f.getParentFile();
@@ -37,9 +36,17 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
     return link + ".fb2";
   }
 
+  protected static String encodeEntities(String html) {
+    return html.replace("&", "&amp;").replace("<", "&lt;");
+  }
+
   public SVStoryFB2Builder() {
     put("body", new BodySupply());
     put("description", new DescriptionSupply());
+  }
+
+  public Node build(Story story) {
+    return has(story, null, "");
   }
 
   @Override
@@ -61,26 +68,20 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
 
     class BodyTitleSupply extends FB2Supplier {
 
-      public BodyTitleSupply() {
-      }
-
       @Override
       protected Node formNode(Story data, Node parent, String path) {
-        return append(parent, new Title(data.getTitle()));
+        return append(parent, new Title(encodeEntities(data.getTitle())));
       }
 
     }
 
     class SectionsSupply extends FB2Supplier {
 
-      public SectionsSupply() {
-      }
-
       @Override
       protected Node formNode(Story data, Node parent, String path) {
         ContainerContainerNode holder = new ContainerContainerNode();
-        for (Entry<Link, Post> post : data.entrySet())
-          holder.add(new Section(post.getKey().getName(), post.getValue().getContents()));
+        for (Entry<Source, Post> post : data.entrySet())
+          holder.add(new Section(encodeEntities(post.getKey().getName()), post.getValue().stringContents()));
         return append(parent, holder);
       }
 
@@ -117,9 +118,6 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
 
       class GenreSupply extends FB2Supplier {
 
-        public GenreSupply() {
-        }
-
         @Override
         protected Node formNode(Story data, Node parent, String path) {
           return append(parent, new Genre("Science Fiction"));
@@ -130,8 +128,7 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
       class AuthorSupply extends FB2Supplier {
 
         public AuthorSupply() {
-          put("first-name", new FirstNameSupply());
-          put("last-name", new LastNameSupply());
+          put("nickname", new NicknameSupply());
         }
 
         @Override
@@ -139,26 +136,11 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
           return append(parent, new Author());
         }
 
-        class FirstNameSupply extends FB2Supplier {
-
-          public FirstNameSupply() {
-          }
+        class NicknameSupply extends FB2Supplier {
 
           @Override
           protected Node formNode(Story data, Node parent, String path) {
-            return append(parent, new FirstName(data.creator().getNickname()));
-          }
-
-        }
-
-        class LastNameSupply extends FB2Supplier {
-
-          public LastNameSupply() {
-          }
-
-          @Override
-          protected Node formNode(Story data, Node parent, String path) {
-            return append(parent, new LastName(data.creator().getTitle()));
+            return append(parent, new FirstName(encodeEntities(data.getAuthor().getName())));
           }
 
         }
@@ -167,20 +149,14 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
 
       class BookTitleSupply extends FB2Supplier {
 
-        public BookTitleSupply() {
-        }
-
         @Override
         protected Node formNode(Story data, Node parent, String path) {
-          return append(parent, new BookTitle(data.getTitle()));
+          return append(parent, new BookTitle(encodeEntities(data.getTitle())));
         }
 
       }
 
       class LangSupply extends FB2Supplier {
-
-        public LangSupply() {
-        }
 
         @Override
         protected Node formNode(Story data, Node parent, String path) {
@@ -191,12 +167,12 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
 
       class AnnotationSupply extends FB2Supplier {
 
-        public AnnotationSupply() {
-        }
-
         @Override
         protected Node formNode(Story data, Node parent, String path) {
-          return append(parent, new Annotation(data.firstPost().getContents()));
+          String annotation = data.getAnnotation();
+          return (annotation != null && !annotation.isEmpty())
+                 ? append(parent, new Annotation(encodeEntities(annotation)))
+                 : null;
         }
 
       }
@@ -207,19 +183,25 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
 
       public DocumentInfoSupply() {
         put("author", new AuthorSupply());
+        put("program-used", new ProgramUsedSupply());
         put("date", new DateSupply());
+        put("src-url", new SrcUrlSupply());
         put("id", new IDSupply());
+        put("version", new VersionSupply());
+        put("history", new HistorySupply());
       }
 
       @Override
       protected Node formNode(Story data, Node parent, String path) {
-        return append(parent, new TitleInfo());
+        return append(parent, new DocumentInfo());
       }
 
       class AuthorSupply extends FB2Supplier {
 
         public AuthorSupply() {
-          put("first-name", new FirstNameSupply());
+          put("nickname", new NickNameSupply());
+          put("homepage", new HomepageSupply());
+          put("email", new EMailSupply());
         }
 
         @Override
@@ -227,24 +209,45 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
           return append(parent, new Author());
         }
 
-        class FirstNameSupply extends FB2Supplier {
-
-          public FirstNameSupply() {
-          }
+        class NickNameSupply extends FB2Supplier {
 
           @Override
           protected Node formNode(Story data, Node parent, String path) {
-            return append(parent, new FirstName("https://github.com/ankhzet/sv-fetcher"));
+            return append(parent, new NamedNode("nickname", "ankhzet"));
+          }
+
+        }
+
+        class HomepageSupply extends FB2Supplier {
+
+          @Override
+          protected Node formNode(Story data, Node parent, String path) {
+            return append(parent, new NamedNode("homepage", "https://github.com/ankhzet/"));
+          }
+
+        }
+
+        class EMailSupply extends FB2Supplier {
+
+          @Override
+          protected Node formNode(Story data, Node parent, String path) {
+            return append(parent, new NamedNode("email", "ankhzet@gmail.com"));
           }
 
         }
 
       }
 
-      class DateSupply extends FB2Supplier {
+      class ProgramUsedSupply extends FB2Supplier {
 
-        public DateSupply() {
+        @Override
+        protected Node formNode(Story data, Node parent, String path) {
+          return append(parent, new NamedNode("program-used", "SV-Fetcher"));
         }
+
+      }
+
+      class DateSupply extends FB2Supplier {
 
         @Override
         protected Node formNode(Story data, Node parent, String path) {
@@ -253,14 +256,38 @@ public class SVStoryFB2Builder extends FB2Builder<Story> {
 
       }
 
-      class IDSupply extends FB2Supplier {
-
-        public IDSupply() {
-        }
+      class SrcUrlSupply extends FB2Supplier {
 
         @Override
         protected Node formNode(Story data, Node parent, String path) {
-          return append(parent, new Id(Strings.md5(data.getBase())));
+          return append(parent, new NamedNode("src-url", data.getSource().getUrl()));
+        }
+
+      }
+
+      class IDSupply extends FB2Supplier {
+
+        @Override
+        protected Node formNode(Story data, Node parent, String path) {
+          return append(parent, new Id(Strings.md5(data.getSource().getUrl())));
+        }
+
+      }
+
+      class VersionSupply extends FB2Supplier {
+
+        @Override
+        protected Node formNode(Story data, Node parent, String path) {
+          return null;
+        }
+
+      }
+
+      class HistorySupply extends FB2Supplier {
+
+        @Override
+        protected Node formNode(Story data, Node parent, String path) {
+          return null;
         }
 
       }

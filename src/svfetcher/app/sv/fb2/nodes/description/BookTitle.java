@@ -1,12 +1,12 @@
 package svfetcher.app.sv.fb2.nodes.description;
 
-import svfetcher.app.sv.fb2.nodes.common.Title;
+import svfetcher.app.sv.fb2.nodes.TextNode;
 
 /**
  *
  * @author Ankh Zet (ankhzet@gmail.com)
  */
-public class BookTitle extends Title {
+public class BookTitle extends TextNode {
 
   public BookTitle() {
   }

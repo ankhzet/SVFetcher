@@ -11,6 +11,16 @@ public abstract class AbstractNode implements Node {
 
   static final Pattern p = Pattern.compile("([A-Z][^A-Z]*+)");
 
+  String attributes;
+
+  public String getAttributes() {
+    return attributes;
+  }
+
+  public void setAttributes(String attributes) {
+    this.attributes = attributes;
+  }
+
   @Override
   public String serialize() {
     String contents = getContents();
@@ -18,7 +28,7 @@ public abstract class AbstractNode implements Node {
       return "";
 
     String tag = tagName();
-    return (tag != null) ? wrap(contents, tag) : contents;
+    return (tag != null) ? wrap(contents, attributes != null ? tag + " " + attributes : tag, tag) : contents;
   }
 
   @Override
@@ -40,8 +50,8 @@ public abstract class AbstractNode implements Node {
     return serialize();
   }
 
-  protected static String wrap(String what, String tag) {
-    return String.format("<%s>%s</%s>", tag, what, tag);
+  protected static String wrap(String what, String openTag, String closeTag) {
+    return String.format("<%s>%s</%s>", openTag, what, closeTag);
   }
 
 }

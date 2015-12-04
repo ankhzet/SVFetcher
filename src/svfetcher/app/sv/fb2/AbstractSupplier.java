@@ -8,6 +8,7 @@ import svfetcher.app.sv.fb2.nodes.ContainerNode;
 /**
  *
  * @author Ankh Zet (ankhzet@gmail.com)
+ * @param <Type>
  */
 public abstract class AbstractSupplier<Type> extends HashMap<String, InfoSupplier> implements InfoSupplier<Type> {
 
@@ -15,8 +16,11 @@ public abstract class AbstractSupplier<Type> extends HashMap<String, InfoSupplie
   public Node has(Type data, Node node, String path) {
     if (path.isEmpty()) {
       Node child = formNode(data, node, path);
-      for (String supplier : keySet())
-        has(data, child, supplier + "." + path);
+
+      if (child != null)
+        for (String supplier : keySet())
+          has(data, child, supplier + "." + path);
+
       return child;
     }
 
@@ -25,10 +29,10 @@ public abstract class AbstractSupplier<Type> extends HashMap<String, InfoSupplie
         return get(supplier).has(data, node, next(path));
 
     throw new RuntimeException(
-            String.format("Unknown supplier path [%s] for supplier %s",
-                          path,
-                          getClass().getSimpleName()
-            )
+      String.format("Unknown supplier path [%s] for supplier %s",
+                    path,
+                    getClass().getSimpleName()
+      )
     );
   }
 
@@ -41,11 +45,11 @@ public abstract class AbstractSupplier<Type> extends HashMap<String, InfoSupplie
     parts.shift();
     return parts.join(".");
   }
-  
+
   static Node append(Node parent, Node child) {
     if (parent instanceof ContainerNode)
-      ((ContainerNode)parent).add(child);
-    
+      ((ContainerNode) parent).add(child);
+
     return child;
   }
 

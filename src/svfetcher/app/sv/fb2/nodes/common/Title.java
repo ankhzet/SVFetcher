@@ -1,6 +1,5 @@
 package svfetcher.app.sv.fb2.nodes.common;
 
-import svfetcher.app.sv.fb2.nodes.TextNode;
 import svfetcher.app.sv.fb2.nodes.ContainerNode;
 
 /**
