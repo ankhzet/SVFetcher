@@ -81,10 +81,24 @@ public class FetchPage extends AbstractPage {
   protected void ready() {
     setTitle("Fetching...");
     Story story = story();
-//    Story source = navDataAtIndex(0, () -> new Story());
-    ObservableList<Source> sources = FXCollections.observableArrayList(story.sections());
-    sectionsList = new SectionsStateList(sources);
+    sectionsList = new SectionsStateList(FXCollections.observableArrayList(story.sections()));
 
+    _story = filtered(story);
+
+    showNotification();
+  }
+
+  private Story _story;
+
+  Story story() {
+    if (_story == null) {
+      Story source = navDataAtIndex(0, () -> new Story());
+      _story = source;
+    }
+    return _story;
+  }
+
+  Story filtered(Story story) {
     LinkedHashMap<Source, Post> done = new LinkedHashMap<>();
     for (StatedSource<Source> section : sectionsList) {
       Post post = story.get(section.getItem());
@@ -96,23 +110,7 @@ public class FetchPage extends AbstractPage {
 
     story.clear();
     story.putAll(done);
-
-    showNotification();
-  }
-
-  private Story _story;
-
-  Story story() {
-    if (_story == null) {
-      Story source = navDataAtIndex(0, () -> new Story());
-      _story = new Story();
-      _story.setSource(source.getSource());
-      _story.setTitle(source.getTitle());
-      _story.setAuthor(source.getAuthor());
-      _story.setAnnotation(source.getAnnotation());
-      _story.putAll(source);
-    }
-    return _story;
+    return story;
   }
 
   void showNotification() {
@@ -152,7 +150,7 @@ public class FetchPage extends AbstractPage {
   boolean complete() {
     stop();
 
-    return proceed(ComposePage.class, story());
+    return proceed(ComposePage.class, filtered(story()));
   }
 
 }
