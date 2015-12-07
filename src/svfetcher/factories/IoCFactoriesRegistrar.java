@@ -6,6 +6,8 @@ import ankh.app.AppProxy;
 import ankh.http.ServerRequest;
 import ankh.ioc.IoC;
 import ankh.ioc.factory.ClassFactory;
+import ankh.ioc.registrar.ClassFactoryRegistrar;
+import ankh.ioc.registrar.FactoryRegistrar;
 import ankh.utils.Utils;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,6 +31,8 @@ public class IoCFactoriesRegistrar extends ClassFactory {
 
   static IoCFactoriesRegistrar registrar;
 
+  static FactoryRegistrar<?> db;
+
   public IoCFactoriesRegistrar(IoC ioc) {
     super(ioc);
 
@@ -51,6 +55,8 @@ public class IoCFactoriesRegistrar extends ClassFactory {
     });
 
     registerClass(App.class);
+
+    db = new ClassFactoryRegistrar<>(new DBFactory(ioc));
   }
 
   final void registerSVCore() {

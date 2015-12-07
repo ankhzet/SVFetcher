@@ -1,19 +1,24 @@
 package svfetcher.app.sv;
 
+import ankh.http.Request;
 import ankh.http.ServerRequest;
 import ankh.http.loading.HTMLLoader;
 import ankh.http.query.DocumentResourceQuery;
+import ankh.http.query.ResourceQuery;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.utils.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.w3c.dom.Document;
 import svfetcher.app.story.Source;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
 import svfetcher.app.sv.forum.parser.PostParser;
 import svfetcher.app.sv.forum.parser.StoryParser;
+import svfetcher.app.utils.Redirect;
+import svfetcher.app.utils.Redirect.Redirects;
 
 /**
  *
@@ -114,6 +119,11 @@ public class SV extends HTMLLoader {
 
       return post;
     });
+  }
+
+  @Override
+  public <Resource> DocumentResourceQuery<Resource> query(Request request) {
+    return new RedirectAvareQuery<>(request);
   }
 
   String postFragment(String pageUrl) {
