@@ -19,6 +19,7 @@ import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
 import svfetcher.app.pages.compose.ComposePage;
 import svfetcher.app.pages.fetch.stated.StatedSource;
+import svfetcher.app.pages.pick.LinkPage;
 
 /**
  *
@@ -43,6 +44,19 @@ public class FetchPage extends AbstractPage {
   @Override
   protected Node buildNode() {
     SourceList list = new SourceList(sectionsList);
+    list.setPickHandler(ref -> {
+      SourceCell cell = ref.get();
+      if (cell == null)
+        return;
+
+      StatedSource<Source> stated = cell.getItem();
+      if (stated == null)
+        return;
+
+      Source source = stated.getItem();
+
+      proceed(LinkPage.class, source.getUrl());
+    });
 
     Button delete = new Button("X");
     delete.setOnAction(h -> {

@@ -1,7 +1,10 @@
 package svfetcher.app.pages.fetch;
 
+import java.lang.ref.WeakReference;
+import javafx.beans.property.ObjectProperty;
 import svfetcher.app.pages.fetch.stated.StatedSource;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -22,6 +25,12 @@ import svfetcher.app.story.Source;
  * @author Ankh Zet (ankhzet@gmail.com)
  */
 public class SourceCell extends ListCell<StatedSource<Source>> {
+
+  public interface PickHandler {
+
+    void accept(WeakReference<SourceCell> cell);
+
+  }
 
   Label title = new Label();
   Label link = new Label();
@@ -80,7 +89,14 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
     hbox.setAlignment(Pos.CENTER);
 
     graphic = hbox;
+
     info.setOnAction(this::toggleDetails);
+    pickHandlerProperty().addListener((l, o, handler) -> {
+      if (handler == null)
+        pick.setOnAction(null);
+      else
+        pick.setOnAction(e -> handler.accept(new WeakReference<>(this)));
+    });
   }
 
   @Override
@@ -104,6 +120,18 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
   private void toggleDetails(ActionEvent e) {
     boolean detailsShown = getPseudoClassStates().contains(DETAILS_PSEUDOCLASS);
     pseudoClassStateChanged(DETAILS_PSEUDOCLASS, !detailsShown);
+  }
+
+  private ObjectProperty<PickHandler> pickHandler;
+
+  public final ObjectProperty<PickHandler> pickHandlerProperty() {
+    if (pickHandler == null)
+      pickHandler = new SimpleObjectProperty<>(this, "pickHandler", null);
+    return pickHandler;
+  }
+
+  public void setPickHandler(PickHandler pickHandler) {
+    pickHandlerProperty().set(pickHandler);
   }
 
   private ReadOnlyBooleanWrapper fetching;

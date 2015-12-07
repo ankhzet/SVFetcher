@@ -8,6 +8,8 @@ import javafx.scene.Node;
 import javafx.scene.control.ListView;
 import ankh.ui.lists.stated.StatedItem;
 import java.util.Set;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -33,6 +35,7 @@ public class SourceList extends ListView<StatedSource<Source>> {
     setCellFactory(listView -> {
       SourceCell cell = new SourceCell(items);
       setCellPrefWidth(cell, clientWidth);
+      cell.pickHandlerProperty().bind(pickHandlerProperty());
       return cell;
     });
 
@@ -133,6 +136,18 @@ public class SourceList extends ListView<StatedSource<Source>> {
         return scrollBar.getWidth();
 
     return 0.;
+  }
+
+  private ObjectProperty<SourceCell.PickHandler> pickHandler;
+
+  private ObjectProperty<SourceCell.PickHandler> pickHandlerProperty() {
+    if (pickHandler == null)
+      pickHandler = new SimpleObjectProperty<>(this, "pickHandler", null);
+    return pickHandler;
+  }
+
+  public void setPickHandler(SourceCell.PickHandler pickHandler) {
+    pickHandlerProperty().set(pickHandler);
   }
 
 }
