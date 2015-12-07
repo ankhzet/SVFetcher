@@ -12,7 +12,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Button;
+import javafx.event.ActionEvent;
+import javafx.scene.control.*;
+import javafx.scene.layout.Priority;
 import svfetcher.app.story.Source;
 
 /**
@@ -57,15 +59,28 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
       stated.setDeleting(!stated.isDeleting());
     });
 
+    Button info = new Button("i");
+    info.getStyleClass().add("info-button");
+
     VBox i = new VBox(title, link);
     i.getStyleClass().add("info");
     HBox.setHgrow(i, Priority.ALWAYS);
-    HBox.setHgrow(i, Priority.ALWAYS);
 
-    HBox hbox = new HBox(8, status, i);
+    Button pick = new Button("Pick this as fetch source");
+    VBox d = new VBox(pick);
+    d.getStyleClass().add("details");
+    d.setAlignment(Pos.CENTER_LEFT);
+    HBox.setHgrow(d, Priority.ALWAYS);
+
+    StackPane middle = new StackPane(i, d);
+    HBox.setHgrow(middle, Priority.ALWAYS);
+
+    HBox hbox = new HBox(8, status, middle, info);
+
     hbox.setAlignment(Pos.CENTER);
 
     graphic = hbox;
+    info.setOnAction(this::toggleDetails);
   }
 
   @Override
@@ -84,6 +99,11 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
 
       setGraphic(graphic);
     }
+  }
+
+  private void toggleDetails(ActionEvent e) {
+    boolean detailsShown = getPseudoClassStates().contains(DETAILS_PSEUDOCLASS);
+    pseudoClassStateChanged(DETAILS_PSEUDOCLASS, !detailsShown);
   }
 
   private ReadOnlyBooleanWrapper fetching;
@@ -130,6 +150,8 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
   private static final PseudoClass FETCHING_PSEUDOCLASS = PseudoClass.getPseudoClass(StatedSource.STATE_FETCHING);
   private static final PseudoClass FETCHED_PSEUDOCLASS = PseudoClass.getPseudoClass(StatedSource.STATE_FETCHED);
   private static final PseudoClass DELETING_PSEUDOCLASS = PseudoClass.getPseudoClass(StatedSource.STATE_DELETING);
+
+  private static final PseudoClass DETAILS_PSEUDOCLASS = PseudoClass.getPseudoClass("details");
 
 }
 

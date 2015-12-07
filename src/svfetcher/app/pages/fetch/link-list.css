@@ -55,3 +55,27 @@
 .link-list .cell:deleting .delete {
   visibility: visible;
 }
+
+/* details */
+
+.link-list .info-button {
+  -fx-pref-height: 7;
+  visibility: hidden;
+}
+
+.link-list .details {
+  visibility: hidden;
+}
+
+.link-list .cell:details .info {
+  visibility: hidden;
+}
+
+.link-list .cell:details .details {
+  visibility: visible;
+}
+
+.link-list .cell:selected .info-button {
+  visibility: visible;
+}
+
