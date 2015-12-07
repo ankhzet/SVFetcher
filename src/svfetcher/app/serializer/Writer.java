@@ -1,9 +1,7 @@
 package svfetcher.app.serializer;
 
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 /**
@@ -16,15 +14,11 @@ public class Writer {
     String filename = writable.filename();
     Objects.requireNonNull(filename);
 
-    File to = new File(filename);
+    try (FileWriter w = new FileWriter(filename)) {
+      String contents = writable.serialize();
 
-    String contents = writable.serialize();
-
-    Files.write(
-      to.toPath(),
-      contents.getBytes(),
-      StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE
-    );
+      w.write(contents);
+    }
   }
 
 }
