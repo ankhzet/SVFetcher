@@ -13,13 +13,15 @@ public class Post extends Section<Node> {
 
   private String cachedContents;
 
+  @Override
   public String stringContents() {
     if (cachedContents == null) {
       NodeSerializer serializer = new NodeSerializer();
       Node contents = getContents();
-      assert contents != null;
+
       if (contents == null)
         return "";
+
       cachedContents = serializer.serialize(contents);
       cachedContents = FB2Cleaner.cleanup(cachedContents);
     }

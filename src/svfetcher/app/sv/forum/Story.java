@@ -22,20 +22,15 @@ public class Story extends svfetcher.app.story.Story<Post> {
     return new ArrayList<>(keySet());
   }
 
-  @Override
-  public void setSource(Source source) {
-    super.setSource(source);
-
-//    for (Source s : this.keySet())
-//      s.setUrl(source.getUrl());
-  }
-
-  @Override
-  public String toString() {
+  public long contentsLength() {
     long charLength = 0;
     for (Post post : values())
       charLength += post.stringContents().length();
-
+    return charLength;
+  }
+  
+  @Override
+  public String toString() {
     return String.format(
       "Author: %s\n"
       + "Title: %s\n"
@@ -44,7 +39,7 @@ public class Story extends svfetcher.app.story.Story<Post> {
       getAuthor(),
       getTitle(),
       size(),
-      charLength
+      contentsLength()
     );
   }
 
