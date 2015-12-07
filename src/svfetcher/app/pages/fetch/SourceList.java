@@ -7,6 +7,12 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ListView;
 import ankh.ui.lists.stated.StatedItem;
+import java.util.Set;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionMode;
 import svfetcher.app.story.Source;
 import svfetcher.app.pages.fetch.stated.StatedSource;
@@ -23,7 +29,12 @@ public class SourceList extends ListView<StatedSource<Source>> {
     super(items);
     getStyleClass().add("link-list");
 
-    setCellFactory(listView -> new SourceCell(items));
+    double clientWidth = clientWidth();
+    setCellFactory(listView -> {
+      SourceCell cell = new SourceCell(items);
+      setCellPrefWidth(cell, clientWidth);
+      return cell;
+    });
 
     getSelectionModel()
       .setSelectionMode(SelectionMode.MULTIPLE);
@@ -57,6 +68,12 @@ public class SourceList extends ListView<StatedSource<Source>> {
           }
       });
 
+    widthProperty().addListener(this::widthChanged);
+    ScrollBar scroll = getViewVerticalScrollBar();
+    if (scroll != null)
+      scroll.visibleProperty().addListener((l, o, visible) -> {
+        widthChanged(null, null, getWidth());
+      });
   }
 
   public void setOnSelect(Consumer<SourceCell> callback) {
@@ -66,6 +83,56 @@ public class SourceList extends ListView<StatedSource<Source>> {
   @Override
   public String getUserAgentStylesheet() {
     return getClass().getResource("link-list.css").toString();
+  }
+
+  private void widthChanged(ObservableValue<? extends Number> observable, Number oldWidth, Number width) {
+    double clientWidth = clientWidth();
+
+    for (Node children : getChildren())
+      if (children instanceof ListCell)
+        setCellPrefWidth((ListCell) children, clientWidth);
+  }
+
+  private void setCellPrefWidth(ListCell cell) {
+    setCellPrefWidth(cell, clientWidth());
+  }
+
+  private void setCellPrefWidth(ListCell cell, double width) {
+    cell.setPrefWidth(width);
+    cell.setMaxWidth(width);
+  }
+
+  private double clientWidth() {
+    double insets = insetsSize(getInsets());
+    double scrollBarWidth = scrollBarWidth();
+
+    return getWidth() - insets - scrollBarWidth;
+  }
+
+  private double insetsSize(Insets insets) {
+    return insets.getLeft() + insets.getRight();
+  }
+
+  private ScrollBar getViewVerticalScrollBar() {
+    Set<Node> nodes = lookupAll(".scroll-bar");
+    for (final Node node : nodes)
+      if (node instanceof ScrollBar) {
+        ScrollBar scrollBar = (ScrollBar) node;
+        if (scrollBar.getOrientation() == Orientation.VERTICAL)
+          return scrollBar;
+      }
+
+    return null;
+  }
+
+  private double scrollBarWidth() {
+    ScrollBar scrollBar = getViewVerticalScrollBar();
+
+    if (scrollBar != null)
+      if (scrollBar.isVisible())
+        return scrollBar.getWidth();
+
+    return 0.;
   }
 
 }
