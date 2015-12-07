@@ -46,7 +46,6 @@ public class LinkPage extends AbstractPage {
       );
     });
 
-    src = "https://forums.spacebattles.com/threads/silencio-thread-7-seven-shady-superheroes-support-shipyard-salvage-shenanigans.310566/";
     String src = navDataAtIndex(0);
     if (src == null) {
 //    src = "keeper-worm-x-dungeon-keeper.18920";

@@ -1,14 +1,13 @@
 package svfetcher.app.pages.compose;
 
 import ankh.ioc.annotations.DependencyInjection;
-import ankh.config.Config;
 import ankh.pages.AbstractPage;
 import ankh.tasks.RunTask;
 import ankh.utils.D;
 import ankh.utils.Utils;
+import ankh.config.Config;
 import java.io.File;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -18,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.controlsfx.control.action.Action;
+import svfetcher.app.serializer.Writable;
 import svfetcher.app.serializer.Writer;
 import svfetcher.app.story.serialization.fb2.FB2StorySerializer;
 import svfetcher.app.sv.forum.Story;
@@ -97,30 +97,38 @@ public class ComposePage extends AbstractPage {
 
     String pathString = to.getAbsolutePath();
 
-    RunTask<Boolean> task = new RunTask<>(String.format("Saving to \"%s\"...", pathString), () -> {
-      Writer writer = new Writer();
-      writer.write(serializer);
+    return followup((TaskedResultSupplier<File>) supplier -> {
+      return supplier.get(() -> {
+        return new RunTask<>(String.format("Saving to \"%s\"...", pathString), () -> {
+          Writer writer = new Writer();
+          writer.write(new Writable() {
 
-      return true;
-    }).setFailed("Failed to save to " + pathString);
+            @Override
+            public String filename() {
+              return pathString;
+            }
 
-    if (!perform(task))
-      return false;
+            @Override
+            public String serialize() {
+              return serializer.serialize();
+            }
+          });
+          return to;
+        });
+      })
+        .setError("Failed to save to " + pathString)
+        .schedule(savedTo -> {
+          if (savedTo == null)
+            return;
 
-    boolean saved = false;
-    try {
-      if (saved = task.get()) {
-        config.set(dirConfigKey, to.getParent());
+          config.set(dirConfigKey, savedTo.getParent());
 
-        notify(
-          "Successfuly saved to " + pathString,
-          new Action("Open", (h) -> open(to))
-        );
-      }
-    } catch (InterruptedException | ExecutionException ex) {
-    }
-
-    return saved;
+          notify(
+            "Successfuly saved to " + savedTo.getAbsolutePath(),
+            new Action("Open", (h) -> open(savedTo))
+          );
+        });
+    });
   }
 
   void open(File file) {

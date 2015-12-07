@@ -1,6 +1,7 @@
 package svfetcher.app.pages.fetch;
 
 import java.lang.ref.WeakReference;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import svfetcher.app.pages.fetch.stated.StatedSource;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -17,6 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import svfetcher.app.story.Source;
 
@@ -54,19 +56,10 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
 
     Button delete = new Button("X");
     delete.getStyleClass().add("delete");
-    delete.setOnAction((h) -> {
-      StatedSource<Source> stated = getItem();
-      if (stated != null)
-        list.remove(stated);
-    });
 
     status = new StackPane(progress, delete);
     status.getStyleClass().add("status");
     status.setAlignment(Pos.CENTER);
-    status.setOnMouseClicked(h -> {
-      StatedSource<Source> stated = getItem();
-      stated.setDeleting(!stated.isDeleting());
-    });
 
     Button info = new Button("i");
     info.getStyleClass().add("info-button");
@@ -90,6 +83,9 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
 
     graphic = hbox;
 
+    status.setOnMouseClicked(this::toggleDeleting);
+    setOnMouseClicked(this::toggleDeleting);
+    delete.setOnAction(this::deleteItem);
     info.setOnAction(this::toggleDetails);
     pickHandlerProperty().addListener((l, o, handler) -> {
       if (handler == null)
@@ -117,9 +113,23 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
     }
   }
 
+  private void deleteItem(ActionEvent e) {
+    StatedSource<Source> stated = getItem();
+    if (stated != null)
+      list.remove(stated);
+  }
+
   private void toggleDetails(ActionEvent e) {
     boolean detailsShown = getPseudoClassStates().contains(DETAILS_PSEUDOCLASS);
     pseudoClassStateChanged(DETAILS_PSEUDOCLASS, !detailsShown);
+  }
+
+  private void toggleDeleting(MouseEvent e) {
+    StatedSource<Source> stated = getItem();
+    if (stated != null)
+      stated.setDeleting(e.getSource() == status);
+
+    e.consume();
   }
 
   private ObjectProperty<PickHandler> pickHandler;
