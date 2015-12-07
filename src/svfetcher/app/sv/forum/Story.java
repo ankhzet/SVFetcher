@@ -28,7 +28,7 @@ public class Story extends svfetcher.app.story.Story<Post> {
       charLength += post.stringContents().length();
     return charLength;
   }
-  
+
   @Override
   public String toString() {
     return String.format(

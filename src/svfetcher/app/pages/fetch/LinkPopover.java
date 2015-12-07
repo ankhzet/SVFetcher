@@ -44,7 +44,7 @@ public class LinkPopover extends PopOver {
 
     super.show(node);
   }
-  
+
   public void hideImmediately() {
     hide(Duration.ZERO);
   }

@@ -53,11 +53,11 @@ public class ComposePage extends AbstractPage {
     title.setContentDisplay(ContentDisplay.RIGHT);
 
     Label info = new Label(String.format("Chapters: %d\nSize: %d", story.size(), story.contentsLength()));
-    
+
     HBox.setHgrow(author, Priority.ALWAYS);
     HBox.setHgrow(title, Priority.ALWAYS);
     HBox.setHgrow(info, Priority.ALWAYS);
-    
+
     return new VBox(8, author, title, info);
   }
 

@@ -49,7 +49,7 @@ public class SV extends HTMLLoader {
     String threadSlug = isSVLink(thread);
     boolean fullUrl = threadSlug != null && !threadSlug.equalsIgnoreCase(thread);
     if (fullUrl)
-        api.setApiAddress(apiServer(thread));
+      api.setApiAddress(apiServer(thread));
 
     ServerRequest request = api.resolve("threads/" + threadSlug + "/threadmarks");
 

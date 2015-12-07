@@ -40,11 +40,12 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
   ProgressIndicator progress;
 
   Node graphic;
-  
+
   ObservableList<StatedSource<Source>> list;
 
   public SourceCell(ObservableList<StatedSource<Source>> list) {
     this.list = list;
+
     setText(null);
     getStyleClass().add("cell");
 

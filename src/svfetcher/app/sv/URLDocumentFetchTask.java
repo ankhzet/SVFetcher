@@ -19,7 +19,7 @@ public class URLDocumentFetchTask<Result> extends AbstractURLDocumentFetchTask<R
 
   @DependencyInjection()
   protected HTMLLoader loader;
-  
+
   private final ResourceSupplier<Document, Result> supplier;
 
   public URLDocumentFetchTask(Request request, ResourceSupplier<Document, Result> supplier) throws FactoryException {
@@ -37,7 +37,7 @@ public class URLDocumentFetchTask<Result> extends AbstractURLDocumentFetchTask<R
   }
 
   public interface ResourceSupplier<Document, Result> extends ResourceQuery.ResourceSupplier<Document, Result> {
-    
+
   }
 
 }

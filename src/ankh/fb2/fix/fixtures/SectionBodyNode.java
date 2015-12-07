@@ -18,7 +18,7 @@ public class SectionBodyNode extends RootNode {
     String html = contents.contents();
 
     html = html.replace("Click to expand...", "");
-    
+
     html = html.replace("\n\n", "\n");
     html = html.replaceAll("\n*" + elTag + "\n*", "\n\n");
 

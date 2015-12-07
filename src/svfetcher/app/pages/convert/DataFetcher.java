@@ -67,7 +67,7 @@ public class DataFetcher {
         break;
     title = Strings.trim(titleText.substring(i), "\n\r \t.");
     String authorName = authorStr.substring(0, i);
-    
+
     author = new Author();
     author.setSource(new Source(authorLink));
     author.setName(authorName);

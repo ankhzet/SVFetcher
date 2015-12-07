@@ -10,5 +10,5 @@ import ankh.fb2.nodes.Node;
 public interface InfoSupplier<Source> {
 
   public Node has(Source data, Node node, String path);
-  
+
 }

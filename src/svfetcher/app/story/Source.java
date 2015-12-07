@@ -33,7 +33,7 @@ public class Source {
   public String toString() {
     String aName = getName();
     String anUrl = getUrl();
-    
+
     return (aName != null) ? String.format("%s [%s]", aName, anUrl) : anUrl;
   }
 

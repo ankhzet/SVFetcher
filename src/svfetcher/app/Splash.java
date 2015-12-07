@@ -9,7 +9,7 @@ public class Splash extends ankh.Splash {
   @Override
   public void init() {
     super.init();
-    
+
     loadProgress.setPrefSize(200, 20);
 //    loadProgress.setTranslateX(120);
 //    
@@ -18,5 +18,5 @@ public class Splash extends ankh.Splash {
     progressText.setPrefSize(200, 16);
 //    progressText.setTextAlignment(TextAlignment.RIGHT);
   }
-  
+
 }
