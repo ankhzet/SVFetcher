@@ -57,7 +57,15 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
       stated.setDeleting(!stated.isDeleting());
     });
 
-    graphic = new HBox(8, status, new VBox(title));
+    VBox i = new VBox(title, link);
+    i.getStyleClass().add("info");
+    HBox.setHgrow(i, Priority.ALWAYS);
+    HBox.setHgrow(i, Priority.ALWAYS);
+
+    HBox hbox = new HBox(8, status, i);
+    hbox.setAlignment(Pos.CENTER);
+
+    graphic = hbox;
   }
 
   @Override
@@ -90,7 +98,22 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
 
   private ReadOnlyBooleanWrapper fetchedPropertyImpl() {
     if (fetched == null)
-      fetched = new PseudoClassStateProperty(this, FETCHED_PSEUDOCLASS);
+      fetched = new PseudoClassStateProperty(this, FETCHED_PSEUDOCLASS) {
+
+        @Override
+        protected void invalidated() {
+          super.invalidated();
+
+          StatedSource<Source> stated = getItem();
+          if (get() && (stated != null))
+            Platform.runLater(() -> {
+              Source item = stated.getItem();
+              title.setText(item.getName());
+              link.setText(item.getUrl());
+            });
+        }
+
+      };
 
     return fetched;
   }

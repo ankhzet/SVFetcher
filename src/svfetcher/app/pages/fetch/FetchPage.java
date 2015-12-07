@@ -53,20 +53,14 @@ public class FetchPage extends AbstractPage {
         story.remove(source.getItem());
     });
 
+    HBox del = new HBox(delete);
+    HBox.setHgrow(del, Priority.ALWAYS);
+
     Button revoke = new Button("Revoke");
     revoke.setOnAction(h -> showNotification());
-    HBox hbox = new HBox(delete, revoke);
+    HBox hbox = new HBox(del, revoke);
     VBox vbox = new VBox(8, list, hbox);
     VBox.setVgrow(list, Priority.ALWAYS);
-//    view.setOnSelect((cell) -> {
-//      if (popOver != null && popOver.isShowing())
-//        popOver.hideImmediately();
-//
-//      Source source = cell.getItem().getItem();
-//      popOver = new LinkPopover();
-//      popOver.setSource(source);
-//      popOver.showNear(cell);
-//    });
 
     return vbox;
   }

@@ -9,6 +9,8 @@
 
 .link-list .link {
   -fx-font-size: 80%;
+  -fx-text-overrun: leading-ellipsis;
+  -fx-text-fill: blue;
 }
 
 .link-list .status {
@@ -27,6 +29,10 @@
   -fx-pref-width: 20;
   -fx-pref-height: 20;
   visibility: hidden;
+}
+
+.link-list .cell:selected .link {
+  -fx-text-fill: white;
 }
 
 .link-list .cell:selected .progress {
