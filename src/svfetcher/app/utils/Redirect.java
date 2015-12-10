@@ -70,11 +70,11 @@ public class Redirect extends Model<String> {
     }
 
     public static Redirect find(String id) {
-      return Model.find(Redirect.class, id);
+      return Model.find(Redirect.class, id).first();
     }
 
     public static List<Redirect> all() {
-      return Model.all(Redirect.class);
+      return Model.all(Redirect.class).get();
     }
 
     public static void all(int chunk, ChunkedConsumer<Redirect> consumer) {
