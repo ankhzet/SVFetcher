@@ -21,6 +21,7 @@ import svfetcher.app.sv.forum.Story;
 import svfetcher.app.pages.compose.ComposePage;
 import svfetcher.app.pages.fetch.stated.StatedSource;
 import svfetcher.app.pages.pick.LinkPage;
+import svfetcher.app.utils.SectionMapping;
 
 /**
  *
@@ -62,8 +63,19 @@ public class FetchPage extends AbstractPage {
       List<StatedSource<Source>> selected = new ArrayList(list.getSelectionModel().getSelectedItems());
       sectionsList.removeAll(selected);
       Story story = story();
-      for (StatedSource<Source> source : selected)
-        story.remove(source.getItem());
+      for (StatedSource<Source> stated : selected) {
+        Source source = stated.getItem();
+        story.remove(source);
+
+        String url = source.getUrl();
+        SectionMapping mapping = SectionMapping.model().find(url).first();
+        if (mapping == null)
+          mapping = new SectionMapping(url);
+
+        mapping.setSuppressed(true);
+
+        SectionMapping.saveModel(mapping);
+      }
     });
 
     HBox del = new HBox(delete);
@@ -101,8 +113,40 @@ public class FetchPage extends AbstractPage {
     if (_story == null) {
       Story source = navDataAtIndex(0, () -> new Story());
       _story = source;
+      Map<Source, Post> posts = filterSuppressed(_story);
+      _story.clear();
+      _story.putAll(posts);
     }
     return _story;
+  }
+
+  Map<Source, Post> filterSuppressed(Map<Source, Post> posts) {
+    Map<String, Source> sourcesMap = new LinkedHashMap<>();
+    List<String> urls = new ArrayList<>();
+    for (Source source : posts.keySet()) {
+      String url = source.getUrl();
+      sourcesMap.put(url, source);
+      urls.add(url);
+    }
+
+    List<SectionMapping> mappings = SectionMapping.model()
+      .whereIn("url", urls.toArray())
+      .get();
+
+    Map<String, SectionMapping> filtered = SectionMapping.filterMappings(mappings, urls);
+
+    Map<Source, Post> filteredSources = new LinkedHashMap<>();
+    for (String url : filtered.keySet()) {
+      Source source = sourcesMap.get(url);
+
+      SectionMapping mapping = filtered.get(url);
+      if (mapping != null && mapping.getTitle() != null)
+        source.setName(mapping.getTitle());
+
+      filteredSources.put(source, posts.get(source));
+    }
+
+    return filteredSources;
   }
 
   Map<Source, Post> filterEmpty(Map<Source, Post> sources) {

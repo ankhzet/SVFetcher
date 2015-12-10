@@ -11,7 +11,9 @@ import ankh.db.query.SQLGrammar;
 import ankh.ioc.factory.ClassFactory;
 import java.sql.Connection;
 import svfetcher.app.utils.Redirect;
+import svfetcher.app.utils.SectionMapping;
 import svfetcher.app.utils.tables.RedirectsTable;
+import svfetcher.app.utils.tables.SectionMappingTable;
 
 /**
  *
@@ -34,6 +36,9 @@ public class DBFactory extends ClassFactory<DB> {
 
     registerClass(RedirectsTable.class);
     registerClass(Redirect.class);
+
+    registerClass(SectionMappingTable.class);
+    registerClass(SectionMapping.class);
   }
 
 }
