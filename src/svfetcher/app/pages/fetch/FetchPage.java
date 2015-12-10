@@ -5,8 +5,9 @@ import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -29,8 +30,6 @@ public class FetchPage extends AbstractPage {
 
   @DependencyInjection()
   protected SV sv;
-
-  private LinkPopover popOver;
 
   FetchTask fetchTask = null;
 
@@ -60,8 +59,8 @@ public class FetchPage extends AbstractPage {
 
     Button delete = new Button("X");
     delete.setOnAction(h -> {
-      ObservableList<StatedSource<Source>> selected = list.getSelectionModel().getSelectedItems();
-      sectionsList.removeAll(new ArrayList(selected));
+      List<StatedSource<Source>> selected = new ArrayList(list.getSelectionModel().getSelectedItems());
+      sectionsList.removeAll(selected);
       Story story = story();
       for (StatedSource<Source> source : selected)
         story.remove(source.getItem());
@@ -106,18 +105,34 @@ public class FetchPage extends AbstractPage {
     return _story;
   }
 
-  Story filtered(Story story) {
-    LinkedHashMap<Source, Post> done = new LinkedHashMap<>();
-    for (StatedSource<Source> section : sectionsList) {
-      Post post = story.get(section.getItem());
-      if (post != null) {
-        section.setFetched(post.getContents() != null);
-        done.put(post.getSource(), post);
-      }
+  Map<Source, Post> filterEmpty(Map<Source, Post> sources) {
+    LinkedHashMap<Source, Post> nonEmpty = new LinkedHashMap<>();
+
+    for (Source source : sources.keySet()) {
+      Post post = sources.get(source);
+      if (post != null && post.getContents() != null)
+        nonEmpty.put(source, post);
     }
 
+    return nonEmpty;
+  }
+
+  Story filtered(Story story) {
+    Map<Source, Post> posts = filterEmpty(story);
     story.clear();
-    story.putAll(done);
+    story.putAll(posts);
+
+    Map<Source, StatedSource<Source>> sections = new LinkedHashMap<>();
+    for (StatedSource<Source> section : sectionsList) {
+      Source source = section.getItem();
+      sections.put(source, section);
+    }
+
+    for (Post post : posts.values()) {
+      StatedSource<Source> section = sections.get(post.getSource());
+      section.setFetched(post.getContents() != null);
+    }
+
     return story;
   }
 

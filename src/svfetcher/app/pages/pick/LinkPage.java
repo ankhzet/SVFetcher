@@ -46,18 +46,9 @@ public class LinkPage extends AbstractPage {
       );
     });
 
-    String src = navDataAtIndex(0);
-    if (src == null) {
-//    src = "keeper-worm-x-dungeon-keeper.18920";
-//    src = "who-needs-enemies-altpower-taylor-worm.22004";
-//      src = "http://samlib.ru/r/raavasta/hollycow.shtml";
-//      src = "http://samlib.ru/p/plotnikow_sergej_aleksandrowich/propavshaya.shtml";
-    }
+    urlField.setText(navDataAtIndex(0));
 
-    urlField.setText(src);
-
-    return new VBox(
-      8, urlField);
+    return new VBox(8, urlField);
   }
 
   @Override
