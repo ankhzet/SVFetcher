@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -60,7 +62,7 @@ public class FetchPage extends AbstractPage {
 
     Button delete = new Button("X");
     delete.setOnAction(h -> {
-      List<StatedSource<Source>> selected = new ArrayList(list.getSelectionModel().getSelectedItems());
+      List<StatedSource<Source>> selected = new ArrayList(selectedItems(list));
       sectionsList.removeAll(selected);
       Story story = story();
       for (StatedSource<Source> stated : selected) {
@@ -77,6 +79,12 @@ public class FetchPage extends AbstractPage {
         SectionMapping.saveModel(mapping);
       }
     });
+    list.getSelectionModel()
+      .getSelectedIndices()
+      .addListener((InvalidationListener) i
+        -> delete.setDisable(selectedItems(list).isEmpty())
+      );
+    delete.setDisable(selectedItems(list).isEmpty());
 
     HBox del = new HBox(delete);
     HBox.setHgrow(del, Priority.ALWAYS);
@@ -88,6 +96,10 @@ public class FetchPage extends AbstractPage {
     VBox.setVgrow(list, Priority.ALWAYS);
 
     return vbox;
+  }
+  
+  ObservableList<StatedSource<Source>> selectedItems(SourceList list) {
+    return list.getSelectionModel().getSelectedItems();
   }
 
   @Override
