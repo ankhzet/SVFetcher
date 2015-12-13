@@ -52,7 +52,12 @@ public class StoryParser extends Parser<Story> {
     Crawler post = new Crawler(dom.filter(postXPath).first());
     Crawler links = post.filter(linkXPath);
     for (Node n : links) {
-      Source source = new Source(attr(n, "href"));
+      String url = attr(n, "href");
+      
+      if (url.matches("(?i)(https?://)?([^/]+)/members/[^\\.]+\\.\\d+.*"))
+        continue;
+      
+      Source source = new Source(url);
       source.setName(n.getTextContent());
 
       Post p = new Post();
