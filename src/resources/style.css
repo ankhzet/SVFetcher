@@ -1,0 +1,30 @@
+#underlay {
+  -fx-background-radius: 8;
+  -fx-background-color: #eee;
+
+  -fx-border-radius: 8;
+  -fx-border-width: 1;
+  -fx-border-color: #888;
+  }
+
+#container {
+  -fx-background-radius: 8;
+  /*-fx-background-color:  linear-gradient(transparent, rgba(0, 0, 0, 0.1));*/
+
+  -fx-border-radius: 8;
+  -fx-border-width: 1;
+  -fx-border-color: #fff;
+}
+
+#header {
+  -fx-border-bottom-width: 1;
+  -fx-border-bottom-color: #666;
+  
+  -fx-background-color:  linear-gradient(rgba(0, 0, 0, 0.1), transparent);
+}
+
+#title {
+  -fx-font-weight: bold;
+  -fx-text-fill: navy;
+  -fx-effect: dropshadow(gaussian, #fff, 1, 0, 0, 1);
+}
