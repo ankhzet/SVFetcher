@@ -48,6 +48,22 @@ public class SV extends HTMLLoader {
     return link;
   }
 
+  public URL threadmarksLink(String from) {
+    return threadLink(Strings.trim(from, "/") + "/threadmarks");
+  }
+
+  public URL threadLink(String from) {
+    String thread = Strings.trim(from, "/");
+
+    String threadSlug = isSVLink(thread);
+    boolean fullUrl = threadSlug != null && !threadSlug.equalsIgnoreCase(thread);
+    if (fullUrl)
+      api.setApiAddress(apiServer(thread));
+
+    ServerRequest request = api.resolve("threads/" + threadSlug);
+    return request.getUrl();
+  }
+
   public DocumentResourceQuery<Story> threadmarks(String threadLink) {
     String thread = Strings.trim(threadLink, "/");
 

@@ -1,5 +1,6 @@
 package svfetcher.app.pages.pick;
 
+import ankh.http.cached.CacheableClient;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
 import java.net.URL;
@@ -22,6 +23,9 @@ public class LinkPage extends AbstractPage {
 
   @DependencyInjection()
   protected SV sv;
+
+  @DependencyInjection()
+  protected CacheableClient cache;
 
   TextField urlField;
 
@@ -77,6 +81,8 @@ public class LinkPage extends AbstractPage {
     return followup((TaskedResultSupplier<Story>) supplier -> {
       return supplier.get(() -> {
         urlField.setDisable(true);
+        cache.forget(sv.threadLink(url));
+        cache.forget(sv.threadmarksLink(url));
 
         return new FetchStoryLinksTask(sv, url);
       })
