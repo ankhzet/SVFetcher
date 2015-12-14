@@ -56,6 +56,15 @@ public class MainStage extends AbstractMainStage {
     });
   }
 
+  void navigateBack() {
+    if (crumbs.size() <= 1)
+      return;
+
+    NavPathPoint<Page, Object[]> p = crumbs.pop();
+    if (p != null)
+      navigateTo(p.page().getClass(), p.arguments());
+  }
+
   @Override
   public void navigateOut() {
     IoCFactoriesRegistrar.drop();
