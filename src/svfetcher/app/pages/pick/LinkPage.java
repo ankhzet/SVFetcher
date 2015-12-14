@@ -40,10 +40,7 @@ public class LinkPage extends AbstractPage {
         return;
       }
 
-      notify("Ready to check threadmarks",
-             new Action("Check", h -> fetchLinks(urlField.getText())),
-             new Action("HTML -> FB2", h -> convertPage(urlField.getText()))
-      );
+      ready();
     });
 
     urlField.setText(navDataAtIndex(0));
@@ -54,18 +51,38 @@ public class LinkPage extends AbstractPage {
   @Override
   protected void ready() {
     setTitle("Pick url to fetch");
+    showNotifier();
+    urlField.setDisable(false);
+  }
+
+  void showNotifier() {
+    Action action;
+    String message = "Ready to fetch thread";
+    if (isSVLink())
+      action = new Action("Fetch", h -> fetchLinks(urlField.getText()));
+    else {
+      message = "Ready to fetch HTML page";
+      action = new Action("Fetch", h -> convertPage(urlField.getText()));
+    }
+
+    notify(message, action);
+  }
+
+  boolean isSVLink() {
+    String threadSlug = sv.isSVLink(urlField.getText());
+    return threadSlug != null;
   }
 
   boolean fetchLinks(String url) {
     return followup((TaskedResultSupplier<Story>) supplier -> {
       return supplier.get(() -> {
-        String threadSlug = sv.isSVLink(url);
-        if (threadSlug == null)
-          throw new Exception("Can't parse link... Is it pointing at SV thread?");
+        urlField.setDisable(true);
 
         return new FetchStoryLinksTask(sv, url);
       })
-        .setError("Failed to check threadmarks at " + url)
+        .setOnCancelled(h -> ready())
+        .setOnFailed(h -> ready())
+        .setError("Failed to fetch thread at " + url)
         .schedule(story -> {
           proceed(FetchPage.class, story);
         });
@@ -75,12 +92,12 @@ public class LinkPage extends AbstractPage {
   boolean convertPage(String path) {
     return followup((TaskedResultSupplier<Document>) supplier -> {
       return supplier.get(() -> {
-        if (path == null || path.isEmpty())
-          throw new Exception("Can't parse link...");
-
+        urlField.setDisable(true);
         return new DocumentFetchTask(new URL(path));
       })
-        .setError("Failed to load page at " + path)
+        .setOnCancelled(h -> ready())
+        .setOnFailed(h -> ready())
+        .setError("Failed to load HTML page at " + path)
         .schedule(document -> {
           proceed(DocumentPage.class, document, path);
         });
