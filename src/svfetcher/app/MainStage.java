@@ -1,9 +1,7 @@
 package svfetcher.app;
 
-import svfetcher.app.sv.SV;
 import ankh.AbstractMainStage;
 import ankh.pages.breadcrumps.Breadcrumbs;
-import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.Page;
 import ankh.utils.Utils;
 import javafx.geometry.Insets;
@@ -16,9 +14,6 @@ import svfetcher.factories.IoCFactoriesRegistrar;
  * @author Ankh Zet (ankhzet@gmail.com)
  */
 public class MainStage extends AbstractMainStage {
-
-  @DependencyInjection()
-  protected SV sv;
 
   Breadcrumbs crumbs;
 

@@ -58,6 +58,9 @@ public class DataFetcher {
     Node titleNode = Crawler.xPath(document, "/html/head/title").first();
     String titleText = titleNode.getTextContent();
     Node a = Crawler.xPath(document, "/html/body/div/h3/small/a").first();
+    if (a == null)
+      throw new RuntimeException("Failed to parse data");
+    
     Node h3 = a.getParentNode().getParentNode();
     String authorLink = a.getAttributes().getNamedItem("href").getTextContent();
     String authorStr = h3.getTextContent().trim();

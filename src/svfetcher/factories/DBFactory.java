@@ -1,6 +1,6 @@
 package svfetcher.factories;
 
-import ankh.ConfigDatabaseSupplier;
+import ankh.app.ConfigDatabaseSupplier;
 import ankh.ioc.IoC;
 import ankh.db.ConnectionBuilder;
 import ankh.db.DB;
