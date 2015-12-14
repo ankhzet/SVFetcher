@@ -43,6 +43,14 @@ public class MainStage extends AbstractMainStage {
   }
 
   void showCrumbs() {
+    boolean show = true;
+    Page currentPage = getCurrent();
+    if (currentPage != null)
+      if (currentPage.pathFragment() == null)
+        show = false;
+
+    crumbs.setVisible(show);
+
     crumbs.rebuild((p) -> {
       navigateTo(p.page().getClass(), p.arguments());
     });
