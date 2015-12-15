@@ -65,8 +65,10 @@ public class IoCFactoriesRegistrar extends ClassFactory {
 
   final void registerSVCore() {
     registerClass(ResponseCache.class, (c, args) -> {
+      App app = IoC.get(App.class);
       SVFConfig config = IoC.get(SVFConfig.class);
-      String dir = Utils.isAny(args, () -> config.getApiCacheDir());
+      String dir = Utils.isAny(args, () -> config.getApiCacheDir("cache"));
+      dir = app.resolveDir(dir);
       FileCache fileCache = new FileCache(dir);
       FileStreamCache fsCache = new FileStreamCache(fileCache);
 
