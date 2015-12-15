@@ -33,13 +33,12 @@ public class MainStage extends AbstractMainStage {
 
   @Override
   public boolean navigateTo(Class<? extends Page> id, Object... args) {
-    return Utils.pass(super.navigateTo(id, args), (Utils.PassThrough<Boolean>) (nav) -> {
-      if (nav) {
-        crumbs.push(getCurrent(), args);
-        showCrumbs();
-      }
-      return nav;
-    });
+    if (!super.navigateTo(id, args))
+      return false;
+
+    crumbs.push(getCurrent(), args);
+    showCrumbs();
+    return true;
   }
 
   void showCrumbs() {

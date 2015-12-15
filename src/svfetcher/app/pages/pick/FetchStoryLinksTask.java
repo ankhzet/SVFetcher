@@ -14,7 +14,6 @@ import svfetcher.app.sv.forum.Story;
 public class FetchStoryLinksTask extends AbstractURLFetchTask<SV, Document, Story> {
 
   String url;
-  ResourceQuery<Document, Story> query;
 
   public FetchStoryLinksTask(SV source, String url) {
     super(source);
@@ -23,7 +22,7 @@ public class FetchStoryLinksTask extends AbstractURLFetchTask<SV, Document, Stor
 
   @Override
   protected ResourceQuery<Document, Story> query(SV sv) {
-    return query = sv.threadmarks(url);
+    return sv.threadmarks(url);
   }
 
   @Override
@@ -36,6 +35,7 @@ public class FetchStoryLinksTask extends AbstractURLFetchTask<SV, Document, Stor
     try {
       return super.call();
     } catch (Exception e) {
+      ResourceQuery<Document, Story> query = getQuery();
       Response response = (query != null) ? query.getResponse() : null;
       if (response != null && response.failed())
         throw new Exception("Provided link, probably, doesn't have threadmarks", e);

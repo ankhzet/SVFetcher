@@ -34,8 +34,6 @@ public class FetchPage extends AbstractPage {
   @DependencyInjection()
   protected SV sv;
 
-  FetchTask fetchTask = null;
-
   SectionsStateList<Source> sectionsList;
 
   @Override
@@ -106,6 +104,7 @@ public class FetchPage extends AbstractPage {
   protected void done() {
     super.done();
     _story = null;
+    sectionsList = null;
   }
 
   @Override
@@ -205,31 +204,18 @@ public class FetchPage extends AbstractPage {
 
   boolean fetch() {
     if (!sectionsList.hasUnfinished())
-      return complete();
+      return proceed(ComposePage.class, filtered(story()));
 
     return followup((TaskedResultSupplier<Post>) supplier -> {
-      return supplier.get(() -> fetchTask = new FetchTask(sv, sectionsList))
+      return supplier.get(() -> new FetchTask(sv, sectionsList))
         .setError("Failed to fetch post")
-        .setOnFailed(h -> stop())
+        .setOnFailed(h -> {})
         .setOnCancelled(h -> showNotification())
         .schedule(post -> {
           story().addSection(post);
           fetch();
         });
     });
-  }
-
-  boolean stop() {
-    return (fetchTask == null)
-           || !fetchTask.isRunning()
-           || fetchTask.isCancelled()
-           || fetchTask.cancel();
-  }
-
-  boolean complete() {
-    stop();
-
-    return proceed(ComposePage.class, filtered(story()));
   }
 
 }

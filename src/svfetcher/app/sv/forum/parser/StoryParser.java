@@ -1,6 +1,8 @@
 package svfetcher.app.sv.forum.parser;
 
+import ankh.utils.Strings;
 import ankh.xml.dom.crawler.Crawler;
+import java.util.ArrayList;
 import org.w3c.dom.Node;
 import svfetcher.app.story.Source;
 import svfetcher.app.sv.forum.Post;
@@ -11,6 +13,19 @@ import svfetcher.app.sv.forum.Story;
  * @author Ankh Zet (ankhzet@gmail.com)
  */
 public class StoryParser extends Parser<Story> {
+
+  private static final XMatchers matchers = new XMatchers() {
+    {
+      add(new XMatcher(
+        "//fieldset[contains(@class, 'breadcrumb')]/span/span/a/span",
+        "//li[contains(@class, 'threadmarkItem')]/a"
+      ));
+      add(new XMatcher(
+        "//div[contains(@class, 'titleBar')]/h1",
+        "(//div[contains(@class, 'messageContent')])[1]/article//a"
+      ));
+    }
+  };
 
   static final String threadmarkXPath = "//li[contains(@class, 'threadmarkItem')]/a";
   static final String titleXPath = "//fieldset[contains(@class, 'breadcrumb')]/span/span/a/span";
@@ -24,13 +39,20 @@ public class StoryParser extends Parser<Story> {
     Story s = new Story();
 
     Crawler dom = new Crawler(node);
-    Node title = dom.filter(titleXPath).last();
-    s.setTitle(title.getTextContent());
+    XMatcher matcher = matchers.pickMatcher(dom);
+    if (matcher == null)
+      throw new RuntimeException("Can't parse threadmarks");
 
-    Crawler threadmarks = dom.filter(threadmarkXPath);
-    for (Node n : threadmarks) {
-      Source source = new Source(attr(n, "href"));
-      source.setName(n.getTextContent());
+    s.setTitle(matcher.title());
+
+    for (Node n : matcher.threadmarks()) {
+      String url = attr(n, "href");
+
+      if (url.matches("(?i)(https?://)?([^/]+)/members/[^\\.]+\\.\\d+.*"))
+        continue;
+
+      Source source = new Source(url);
+      source.setName(Strings.trim(n.getTextContent(), "-, \t\r\n"));
 
       Post p = new Post();
       p.setSource(source);
@@ -43,30 +65,62 @@ public class StoryParser extends Parser<Story> {
 
   @Override
   public Story fromPost(Node node, Object... args) {
-    Story s = new Story();
+    return fromPage(node, args);
+  }
 
-    Crawler dom = new Crawler(node);
-    Node title = dom.filter(titlePostXPath).last();
-    s.setTitle(title.getTextContent());
+}
 
-    Crawler post = new Crawler(dom.filter(postXPath).first());
-    Crawler links = post.filter(linkXPath);
-    for (Node n : links) {
-      String url = attr(n, "href");
-      
-      if (url.matches("(?i)(https?://)?([^/]+)/members/[^\\.]+\\.\\d+.*"))
-        continue;
-      
-      Source source = new Source(url);
-      source.setName(n.getTextContent());
+class XMatcher {
 
-      Post p = new Post();
-      p.setSource(source);
+  private final String title;
+  private final String threadmark;
+  private final Crawler dom;
 
-      s.addSection(p);
-    }
+  private Crawler threadmarksNodes;
+  private Node titleNode;
 
-    return s;
+  public XMatcher(String title, String threadmark) {
+    this(title, threadmark, null);
+  }
+
+  public XMatcher(String title, String threadmark, Crawler dom) {
+    this.title = title;
+    this.threadmark = threadmark;
+    this.dom = dom;
+  }
+
+  String title() {
+    if (titleNode == null && dom != null)
+      titleNode = dom.filter(title).last();
+
+    if (titleNode == null)
+      return null;
+
+    return titleNode.getTextContent();
+  }
+
+  Crawler threadmarks() {
+    if (threadmarksNodes == null && dom != null)
+      threadmarksNodes = dom.filter(threadmark);
+    return threadmarksNodes;
+  }
+
+  XMatcher matches(Crawler dom) {
+    XMatcher matcher = new XMatcher(title, threadmark, dom);
+    return matcher.threadmarks().size() > 0 ? matcher : null;
+  }
+
+}
+
+class XMatchers extends ArrayList<XMatcher> {
+
+  XMatcher pickMatcher(Crawler dom) {
+    XMatcher matched;
+    for (XMatcher matcher : this)
+      if ((matched = matcher.matches(dom)) != null)
+        return matched;
+
+    return null;
   }
 
 }
