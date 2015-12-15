@@ -2,3 +2,9 @@
 * text=auto eol=lf
 
 *.java   text diff=java
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ttf binary
