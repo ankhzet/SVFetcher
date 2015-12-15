@@ -21,6 +21,10 @@ public class StoryParser extends Parser<Story> {
         "//li[contains(@class, 'threadmarkItem')]/a"
       ));
       add(new XMatcher(
+        "//fieldset[contains(@class, 'breadcrumb')]/span/span/a/span",
+        "//li[contains(@class, 'memberListItem')]/a"
+      ));
+      add(new XMatcher(
         "//div[contains(@class, 'titleBar')]/h1",
         "(//div[contains(@class, 'messageContent')])[1]/article//a"
       ));
