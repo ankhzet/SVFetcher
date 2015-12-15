@@ -68,3 +68,10 @@
 
   -fx-border-insets: 8;
 }
+
+#header .config {
+  -fx-background-image: url(config.png);
+  -fx-background-repeat: no-repeat;
+  -fx-background-position: center center;
+  -fx-background-size: 12 12;
+}

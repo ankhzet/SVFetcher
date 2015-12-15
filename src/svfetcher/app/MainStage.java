@@ -3,9 +3,14 @@ package svfetcher.app;
 import ankh.AbstractMainStage;
 import ankh.pages.breadcrumps.Breadcrumbs;
 import ankh.pages.Page;
+import ankh.pages.breadcrumps.NavPathPoint;
 import ankh.utils.Utils;
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.Pane;
+import svfetcher.app.pages.config.ConfigPage;
 import svfetcher.app.pages.pick.LinkPage;
 import svfetcher.factories.IoCFactoriesRegistrar;
 
@@ -16,6 +21,28 @@ import svfetcher.factories.IoCFactoriesRegistrar;
 public class MainStage extends AbstractMainStage {
 
   Breadcrumbs crumbs;
+
+  PseudoClass active = PseudoClass.getPseudoClass("active");
+
+  @Override
+  public Pane actionPane() {
+    Pane pane = super.actionPane();
+
+    Button configButton = new Button();
+    configButton.getStyleClass().add("config");
+    configButton.setOnAction(h -> {
+      boolean atConfig = getCurrent() instanceof ConfigPage;
+      if (!atConfig)
+        navigateTo(ConfigPage.class);
+      else
+        navigateBack();
+
+      configButton.pseudoClassStateChanged(active, !atConfig);
+    });
+    pane.getChildren().add(0, configButton);
+
+    return pane;
+  }
 
   @Override
   public Scene constructScene() {
