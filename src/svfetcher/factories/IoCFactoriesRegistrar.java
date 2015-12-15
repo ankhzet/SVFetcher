@@ -3,7 +3,10 @@ package svfetcher.factories;
 import ankh.app.AppCacheableHttpClient;
 import ankh.app.AppConfig;
 import ankh.app.AppProxy;
+import ankh.fs.cache.FileCache;
+import ankh.fs.cache.FileStreamCache;
 import ankh.http.ServerRequest;
+import ankh.http.cached.ResponseCache;
 import ankh.ioc.IoC;
 import ankh.ioc.factory.ClassFactory;
 import ankh.ioc.registrar.ClassFactoryRegistrar;
@@ -60,6 +63,14 @@ public class IoCFactoriesRegistrar extends ClassFactory {
   }
 
   final void registerSVCore() {
+    registerClass(ResponseCache.class, (c, args) -> {
+      AppConfig config = IoC.get(AppConfig.class);
+      String dir = Utils.isAny(args, () -> config.resolveAppDir("api.cache.path", "cache"));
+      FileCache fileCache = new FileCache(dir);
+      FileStreamCache fsCache = new FileStreamCache(fileCache);
+
+      return new ResponseCache(fsCache);
+    });
     registerClass(AppProxy.class);
     registerClass(AppCacheableHttpClient.class);
     registerClass(ServerRequest.class);
