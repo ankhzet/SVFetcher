@@ -16,12 +16,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import svfetcher.App;
 import svfetcher.app.MainStage;
+import svfetcher.app.SVFConfig;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.SVParserFactory;
 import svfetcher.app.sv.forum.parser.PostParser;
 import svfetcher.app.sv.forum.parser.StoryParser;
 import svfetcher.app.sv.forum.parser.UserParser;
 import svfetcher.app.pages.compose.SavePage;
+import svfetcher.app.pages.config.ConfigPage;
 import svfetcher.app.pages.convert.DocumentPage;
 import svfetcher.app.pages.fetch.FetchPage;
 import svfetcher.app.pages.pick.LinkPage;
@@ -39,10 +41,10 @@ public class IoCFactoriesRegistrar extends ClassFactory {
   public IoCFactoriesRegistrar(IoC ioc) {
     super(ioc);
 
-    registerClass(AppConfig.class, (c, args) -> {
+    registerClass(SVFConfig.class, (c, args) -> {
       String src = Utils.isAny(args, () -> IoC.get(App.class).appName());
 
-      return new AppConfig(src);
+      return new SVFConfig(src);
     });
 
     registerSVCore();
@@ -64,8 +66,8 @@ public class IoCFactoriesRegistrar extends ClassFactory {
 
   final void registerSVCore() {
     registerClass(ResponseCache.class, (c, args) -> {
-      AppConfig config = IoC.get(AppConfig.class);
-      String dir = Utils.isAny(args, () -> config.resolveAppDir("api.cache.path", "cache"));
+      SVFConfig config = IoC.get(SVFConfig.class);
+      String dir = Utils.isAny(args, () -> config.getApiCacheDir());
       FileCache fileCache = new FileCache(dir);
       FileStreamCache fsCache = new FileStreamCache(fileCache);
 
@@ -89,6 +91,7 @@ public class IoCFactoriesRegistrar extends ClassFactory {
     registerClass(SavePage.class);
     registerClass(DocumentPage.class);
 
+    registerClass(ConfigPage.class);
   }
 
   public static void register() {
