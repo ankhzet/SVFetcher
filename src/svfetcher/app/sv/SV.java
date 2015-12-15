@@ -2,6 +2,7 @@ package svfetcher.app.sv;
 
 import ankh.http.Request;
 import ankh.http.ServerRequest;
+import ankh.http.cached.CacheableClient;
 import ankh.http.loading.HTMLLoader;
 import ankh.http.query.DocumentResourceQuery;
 import ankh.ioc.annotations.DependencyInjection;
@@ -30,6 +31,9 @@ public class SV extends HTMLLoader {
 
   @DependencyInjection()
   protected ServerRequest api;
+
+  @DependencyInjection()
+  protected CacheableClient cache;
 
   public String isSVLink(String link) {
     if (link == null || (link = link.trim()).isEmpty())
@@ -69,6 +73,7 @@ public class SV extends HTMLLoader {
       api.setApiAddress(apiServer(thread));
 
     ServerRequest request = api.resolve("threads/" + threadSlug + "/threadmarks");
+    cache.forget(request.getFullUrl());
 
     return query(request, document -> {
       Story story;
@@ -76,7 +81,10 @@ public class SV extends HTMLLoader {
         if (!fullUrl)
           return null;
 
-        DocumentResourceQuery<Story> post = query(api.resolve("threads/" + threadSlug), doc2 -> {
+        ServerRequest firstPostRequest = api.resolve("threads/" + threadSlug);
+        cache.forget(firstPostRequest.getFullUrl());
+
+        DocumentResourceQuery<Story> post = query(firstPostRequest, doc2 -> {
           if (doc2 == null)
             return null;
 

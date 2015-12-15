@@ -24,9 +24,6 @@ public class LinkPage extends AbstractPage {
   @DependencyInjection()
   protected SV sv;
 
-  @DependencyInjection()
-  protected CacheableClient cache;
-
   TextField urlField;
 
   @Override
@@ -81,9 +78,6 @@ public class LinkPage extends AbstractPage {
     return followup((TaskedResultSupplier<Story>) supplier -> {
       return supplier.get(() -> {
         urlField.setDisable(true);
-        cache.forget(sv.threadLink(url));
-        cache.forget(sv.threadmarksLink(url));
-
         return new FetchStoryLinksTask(sv, url);
       })
         .setOnCancelled(h -> ready())
