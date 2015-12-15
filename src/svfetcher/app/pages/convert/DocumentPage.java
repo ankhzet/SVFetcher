@@ -75,7 +75,7 @@ public class DocumentPage extends AbstractPage {
           post.setSource(base);
           post.setTitle(data.getTitle());
           post.setAuthor(data.getAuthor());
-          post.setContents(root);
+          post.setContentsFromXML(root);
 
           Story story = new Story();
           story.setSource(base);

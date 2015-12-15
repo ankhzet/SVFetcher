@@ -38,7 +38,8 @@ public class PostParser extends Parser<Post> {
     Post p = new Post();
     p.setSource(Utils.anyOf(args, Source.class));
     p.setAuthor(userParser.fromPost(post));
-    p.setContents(dom.first());
+    p.setContentsFromXML(dom.first());
+
     return p;
   }
 
