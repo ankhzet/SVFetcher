@@ -20,7 +20,7 @@
   -fx-pref-height: 30;
   -fx-border-bottom-width: 1;
   -fx-border-bottom-color: #666;
-  
+
   -fx-background-color:  linear-gradient(rgba(0, 0, 0, 0.1), transparent);
 }
 
@@ -39,12 +39,12 @@
 
   -fx-text-fill: #777;
   -fx-font-weight: bold;
-  
+
   -fx-background-color: transparent;
 
   -fx-background-radius: 5;
   -fx-background-insets: 0 0 0 0;
-  
+
   -fx-cursor: hand;
 }
 
@@ -65,6 +65,6 @@
   -fx-border-radius: 6;
   -fx-border-width: 1;
   -fx-border-color: #aaa;
-  
+
   -fx-border-insets: 8;
 }

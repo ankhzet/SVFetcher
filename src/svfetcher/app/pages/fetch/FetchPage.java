@@ -95,7 +95,7 @@ public class FetchPage extends AbstractPage {
 
     return vbox;
   }
-  
+
   ObservableList<StatedSource<Source>> selectedItems(SourceList list) {
     return list.getSelectionModel().getSelectedItems();
   }

@@ -15,8 +15,7 @@ public class SectionMappingTable extends Table {
     return ""
            + "  url text primary key not null"
            + ", title text null"
-           + ", suppressed boolean not null default false"
-      ;
+           + ", suppressed boolean not null default false";
   }
 
   public String idColumn() {
