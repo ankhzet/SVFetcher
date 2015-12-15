@@ -24,16 +24,16 @@ public class PostParser extends Parser<Post> {
       return ((uid == null) || uid.isEmpty()) ? "post" : uid;
     });
 
-    Crawler dom = Crawler.filter(node, "//li[contains(@id, '%s')]", selector);
+    Crawler dom = Crawler.filter(node, "(//li[contains(@id, '%s')])[1]", selector);
 
     return dom.size() > 0 ? fromPost(dom.first(), args) : null;
   }
 
   @Override
   public Post fromPost(Node post, Object... args) {
-    Crawler dom = Crawler.filter(post, "//article");
+    Crawler dom = Crawler.filter(post, ".//article");
 
-    dom.remove("//*[contains(@class, 'JsOnly')]");
+    dom.remove(".//*[contains(@class, 'JsOnly')]");
 
     Post p = new Post();
     p.setSource(Utils.anyOf(args, Source.class));

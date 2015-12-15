@@ -31,13 +31,6 @@ public class StoryParser extends Parser<Story> {
     }
   };
 
-  static final String threadmarkXPath = "//li[contains(@class, 'threadmarkItem')]/a";
-  static final String titleXPath = "//fieldset[contains(@class, 'breadcrumb')]/span/span/a/span";
-
-  static final String titlePostXPath = "//div[contains(@class, 'titleBar')]/h1";
-  static final String postXPath = "//div[contains(@class, 'messageContent')]/article";
-  static final String linkXPath = "//a";
-
   @Override
   public Story fromPage(Node node, Object... args) {
     Story s = new Story();

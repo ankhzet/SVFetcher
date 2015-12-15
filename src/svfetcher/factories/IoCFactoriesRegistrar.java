@@ -1,7 +1,6 @@
 package svfetcher.factories;
 
 import ankh.app.AppCacheableHttpClient;
-import ankh.app.AppConfig;
 import ankh.app.AppProxy;
 import ankh.fs.cache.FileCache;
 import ankh.fs.cache.FileStreamCache;

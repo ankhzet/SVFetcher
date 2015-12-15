@@ -14,14 +14,15 @@ import svfetcher.app.sv.forum.User;
  */
 public class UserParser extends Parser<User> {
 
-  static final String pageXPath = "//li%s";
-  static final String cntXPath = "//article";
-
   @Override
   public User fromPage(Node node, Object... args) {
     String userId = Utils.isAny(args);
 
-    Crawler dom = new Crawler(node).filter("//h3[contains(@class, 'userText')]");
+    String xpath = "//h3[contains(@class, 'userText')]";
+    if (userId == null)
+      xpath = "(" + xpath + ")[1]";
+
+    Crawler dom = new Crawler(node).filter(xpath);
 
     if (userId == null)
       return fromPost(dom.first(), args);
@@ -40,7 +41,7 @@ public class UserParser extends Parser<User> {
   public User fromPost(Node post, Object... args) {
     Node user = isNode(post, "h3")
                 ? post
-                : Crawler.filter(post, "//h3[contains(@class, 'userText')]").first();
+                : Crawler.filter(post, "(.//h3[contains(@class, 'userText')])[1]").first();
 
     Crawler uDom = new Crawler(user);
 
