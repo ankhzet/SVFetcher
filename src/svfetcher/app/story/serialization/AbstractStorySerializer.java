@@ -2,8 +2,10 @@ package svfetcher.app.story.serialization;
 
 import svfetcher.app.serializer.Serializable;
 import svfetcher.app.serializer.Writable;
+import svfetcher.app.story.Author;
 import svfetcher.app.story.Section;
 import svfetcher.app.story.Story;
+import svfetcher.app.sv.forum.User;
 
 /**
  *
@@ -20,9 +22,10 @@ public abstract class AbstractStorySerializer<T extends Section<?>> implements S
 
   @Override
   public String filename() {
-    String author = story.getAuthor().getName();
+    Author author = story.getAuthor();
+    String authorName = (author instanceof User) ? ((User) author).getNickName() : author.getName();
     String title = story.getTitle();
-    return transliterate(String.format("%s - %s", author, title));
+    return transliterate(String.format("%s - %s", authorName, title));
   }
 
   static String transliterate(String str) {
