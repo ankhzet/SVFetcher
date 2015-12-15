@@ -5,7 +5,7 @@
   -fx-border-radius: 8;
   -fx-border-width: 1;
   -fx-border-color: #888;
-  }
+}
 
 #container {
   -fx-background-radius: 8;
@@ -17,6 +17,7 @@
 }
 
 #header {
+  -fx-pref-height: 30;
   -fx-border-bottom-width: 1;
   -fx-border-bottom-color: #666;
   
@@ -27,4 +28,43 @@
   -fx-font-weight: bold;
   -fx-text-fill: navy;
   -fx-effect: dropshadow(gaussian, #fff, 1, 0, 0, 1);
+  -fx-padding: 0 5 0 5;
+}
+
+#header .button {
+  -fx-pref-width: 23;
+  -fx-pref-height: 24;
+
+  -fx-padding: 0;
+
+  -fx-text-fill: #777;
+  -fx-font-weight: bold;
+  
+  -fx-background-color: transparent;
+
+  -fx-background-radius: 5;
+  -fx-background-insets: 0 0 0 0;
+  
+  -fx-cursor: hand;
+}
+
+#header .button:hover, #header .button:active {
+  -fx-background-color: #fff;
+  -fx-text-fill: #888;
+}
+
+#header .button.close:hover {
+  -fx-background-color: #d33;
+  -fx-text-fill: #fff;
+}
+
+#header #actions {
+  -fx-background-color: #ccc;
+  -fx-background-radius: 6;
+  -fx-background-insets: 8;
+  -fx-border-radius: 6;
+  -fx-border-width: 1;
+  -fx-border-color: #aaa;
+  
+  -fx-border-insets: 8;
 }
