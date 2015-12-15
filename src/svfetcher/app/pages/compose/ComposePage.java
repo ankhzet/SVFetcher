@@ -5,7 +5,6 @@ import ankh.pages.AbstractPage;
 import ankh.tasks.RunTask;
 import ankh.utils.D;
 import ankh.utils.Utils;
-import ankh.config.Config;
 import java.io.File;
 import java.util.Optional;
 import javafx.scene.control.ButtonType;
@@ -17,6 +16,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.controlsfx.control.action.Action;
+import svfetcher.app.SVFConfig;
 import svfetcher.app.serializer.Writable;
 import svfetcher.app.serializer.Writer;
 import svfetcher.app.story.serialization.fb2.FB2StorySerializer;
@@ -28,11 +28,8 @@ import svfetcher.app.sv.forum.Story;
  */
 public class ComposePage extends AbstractPage {
 
-  static final String dirConfigKey = "default-folder";
-  static final String rdrConfigKey = "fb2-reader";
-
   @DependencyInjection()
-  protected Config config;
+  protected SVFConfig config;
 
   @Override
   protected javafx.scene.Node buildNode() {
@@ -87,9 +84,14 @@ public class ComposePage extends AbstractPage {
     chooser.getExtensionFilters().add(filter);
     chooser.setSelectedExtensionFilter(filter);
     chooser.setInitialFileName(serializer.filename());
-    String dir = config.get(dirConfigKey, "");
-    if (!dir.isEmpty() && new File(dir).isDirectory())
-      chooser.setInitialDirectory(new File(dir));
+
+    String saveDir = config.getSaveFolder();
+    if (!saveDir.isEmpty()) {
+      File dirFile = new File(saveDir);
+      if (!dirFile.isDirectory())
+        dirFile = dirFile.getParentFile();
+      chooser.setInitialDirectory(dirFile);
+    }
 
     File to = chooser.showSaveDialog(null);
 
@@ -122,7 +124,8 @@ public class ComposePage extends AbstractPage {
           if (savedTo == null)
             return;
 
-          config.set(dirConfigKey, savedTo.getParent());
+          if (saveDir.isEmpty())
+            config.setSaveFolder(savedTo.getParent());
 
           notify(
             "Successfuly saved to " + savedTo.getAbsolutePath(),
@@ -133,24 +136,13 @@ public class ComposePage extends AbstractPage {
   }
 
   void open(File file) {
-    String reader = config.get(rdrConfigKey, "");
+    String reader = config.getReader();
     if (reader.isEmpty()) {
       Optional<ButtonType> r = D.confirm(null, "FB2 reader not set, choose one?");
       if (!(r.isPresent() && r.get() == ButtonType.OK))
         return;
 
-      FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Executable file", "*.exe");
-      FileChooser chooser = new FileChooser();
-      chooser.getExtensionFilters().add(filter);
-      chooser.setSelectedExtensionFilter(filter);
-      String dir = config.get(dirConfigKey, "");
-      if (!dir.isEmpty() && new File(dir).isDirectory())
-        chooser.setInitialDirectory(new File(dir));
-
-      File choosed = chooser.showOpenDialog(null);
-
-      if (choosed != null)
-        config.set(rdrConfigKey, reader = choosed.getAbsolutePath());
+      reader = config.pickReader();
     }
 
     if (reader.isEmpty()) {
