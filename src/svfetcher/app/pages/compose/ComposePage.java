@@ -8,13 +8,12 @@ import ankh.utils.Utils;
 import ankh.config.Config;
 import java.io.File;
 import java.util.Optional;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import org.controlsfx.control.action.Action;
 import svfetcher.app.serializer.Writable;
@@ -34,31 +33,36 @@ public class ComposePage extends AbstractPage {
   @DependencyInjection()
   protected Config config;
 
+  private Node row(String labelCaption, Node node) {
+    Label label = new Label(labelCaption);
+    label.setLabelFor(node);
+    label.setTextAlignment(TextAlignment.RIGHT);
+    label.setPrefWidth(100);
+    HBox.setHgrow(node, Priority.ALWAYS);
+    return new HBox(8, label, node);
+  }
+
   @Override
   protected javafx.scene.Node buildNode() {
     Story story = story();
-
-    TextField authorField = new TextField(story.getAuthor().toString());
-    authorField.textProperty().addListener((l, o, text) -> {
-      story.getAuthor().setName(text);
-    });
-    Label author = new Label("Author:", authorField);
-    author.setContentDisplay(ContentDisplay.RIGHT);
-
     TextField titleField = new TextField(story.getTitle());
     titleField.textProperty().addListener((l, o, text) -> {
       story.setTitle(text);
     });
-    Label title = new Label("Title:", titleField);
-    title.setContentDisplay(ContentDisplay.RIGHT);
+    Hyperlink link = new Hyperlink(story.getAuthor().getName());
+    link.setOnAction(h -> {
+      Utils.safely(() -> {
+        String url = story.getAuthor().getSource().getUrl();
+        Utils.open("%s", url);
+      });
+    });
 
-    Label info = new Label(String.format("Chapters: %d\nSize: %d", story.size(), story.contentsLength()));
-
-    HBox.setHgrow(author, Priority.ALWAYS);
-    HBox.setHgrow(title, Priority.ALWAYS);
-    HBox.setHgrow(info, Priority.ALWAYS);
-
-    return new VBox(8, author, title, info);
+    return new VBox(8,
+                    row("Author:", link),
+                    row("Title:", titleField),
+                    row("Chapters:", new Label(String.valueOf(story.size()))),
+                    row("Size:", new Label(Utils.humanReadableByteCount(story.contentsLength())))
+    );
   }
 
   @Override
