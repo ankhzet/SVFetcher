@@ -109,8 +109,9 @@ public class FetchPage extends AbstractPage {
 
   @Override
   protected void ready() {
-    setTitle("Fetching...");
     Story story = story();
+    setTitle("Fetching \"" + story.getTitle() + "\"");
+
     sectionsList = new SectionsStateList(FXCollections.observableArrayList(story.sections()));
 
     _story = filtered(story);

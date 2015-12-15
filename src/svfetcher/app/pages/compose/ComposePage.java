@@ -63,7 +63,8 @@ public class ComposePage extends AbstractPage {
 
   @Override
   protected void ready() {
-    setTitle("Composing...");
+    Story story = story();
+    setTitle("Composing \"" + story.getTitle() + "\"...");
     notify("Ready to save fetched story", new Action("Save", (h) -> compose()));
   }
 
