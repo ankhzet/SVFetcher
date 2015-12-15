@@ -26,7 +26,7 @@ public abstract class AbstractStorySerializer<T extends Section<?>> implements S
   }
 
   static String transliterate(String str) {
-    str = str.replace("_", " ");
+    str = str.replace("_", " ").replace(":", " - ");
     str = str.replaceAll("[\\*\\?]", "");
     str = str.replaceAll(" {2,}", " ");
 

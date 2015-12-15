@@ -21,7 +21,7 @@ public class User extends Author {
   @Override
   public String getName() {
     String name = super.getName();
-    if (title != null)
+    if (title != null && !title.isEmpty())
       name += " (" + title + ")";
     return name;
   }
