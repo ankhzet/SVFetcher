@@ -3,6 +3,7 @@ package svfetcher.app;
 import ankh.AbstractMainStage;
 import ankh.pages.breadcrumps.Breadcrumbs;
 import ankh.pages.Page;
+import ankh.pages.breadcrumps.NavPathPoint;
 import ankh.utils.Utils;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
