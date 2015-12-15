@@ -1,15 +1,16 @@
 package svfetcher.app.pages.config;
 
-import ankh.config.Config;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
-import javafx.geometry.Pos;
+import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import svfetcher.app.SVFConfig;
+import svfetcher.app.pages.config.ui.AccessoriedConfigNode;
+import svfetcher.app.pages.config.ui.ConfigBox;
+import svfetcher.app.pages.config.ui.ConfigNode;
+import svfetcher.app.pages.config.ui.ConfigUI;
 
 /**
  *
@@ -18,21 +19,55 @@ import javafx.scene.layout.VBox;
 public class ConfigPage extends AbstractPage {
 
   @DependencyInjection()
-  protected Config config;
+  protected SVFConfig config;
 
   @Override
   public String pathFragment() {
     return null;
   }
 
+  ConfigUI ui;
+
   @Override
   protected Node buildNode() {
-    return new VBox();
+    if (ui == null)
+      ui = new ConfigUI(
+        box("Common",
+            access("FB2 reader",
+                   config.readerProperty(),
+                   e -> config.pickReader()),
+            access("Save folder",
+                   config.saveFolderProperty(),
+                   e -> config.pickSaveFolder())
+        ),
+        box("Requests",
+            simple("Proxy", config.apiProxyProperty()),
+            simple("Default server", config.apiServerProperty()),
+            simple("Cache storage", config.apiCacheDirProperty()),
+            simple("Cache for (minutes)", config.apiCacheTtlProperty())
+        )
+      );
+
+    return ui.getNode();
   }
 
   @Override
   protected void ready() {
     setTitle("Settings");
+  }
+
+  ConfigNode box(String caption, ConfigNode... nodes) {
+    ConfigBox box = new ConfigBox(caption);
+    box.add(nodes);
+    return box;
+  }
+
+  ConfigNode simple(String caption, StringProperty property) {
+    return new ConfigNode(caption + ":", property);
+  }
+
+  ConfigNode access(String caption, StringProperty property, EventHandler<ActionEvent> h) {
+    return new AccessoriedConfigNode(caption + ":", property, h);
   }
 
 }
