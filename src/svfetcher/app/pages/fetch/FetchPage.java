@@ -20,7 +20,7 @@ import svfetcher.app.story.Source;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.pages.compose.ComposePage;
+import svfetcher.app.pages.compose.SavePage;
 import svfetcher.app.pages.fetch.stated.StatedSource;
 import svfetcher.app.pages.pick.LinkPage;
 import svfetcher.app.utils.SectionMapping;
@@ -205,7 +205,7 @@ public class FetchPage extends AbstractPage {
 
   boolean fetch() {
     if (!sectionsList.hasUnfinished())
-      return proceed(ComposePage.class, filtered(story()));
+      return proceed(SavePage.class, filtered(story()));
 
     return followup((TaskedResultSupplier<Post>) supplier -> {
       return supplier.get(() -> new FetchTask(sv, sectionsList))

@@ -25,7 +25,7 @@ import svfetcher.app.sv.forum.Story;
  *
  * @author Ankh Zet (ankhzet@gmail.com)
  */
-public class ComposePage extends AbstractPage {
+public class SavePage extends AbstractPage {
 
   static final String dirConfigKey = "default-folder";
   static final String rdrConfigKey = "fb2-reader";
@@ -68,13 +68,13 @@ public class ComposePage extends AbstractPage {
   @Override
   protected void ready() {
     Story story = story();
-    setTitle("Composing \"" + story.getTitle() + "\"...");
+    setTitle("Saving \"" + story.getTitle() + "\"");
     notify("Ready to save fetched story", new Action("Save", (h) -> compose()));
   }
 
   @Override
   public String pathFragment() {
-    return "Compose";
+    return "Save";
   }
 
   Story story() {
