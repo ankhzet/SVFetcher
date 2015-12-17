@@ -5,15 +5,16 @@ import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
 import java.net.URL;
 import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.action.Action;
 import org.w3c.dom.Document;
+import svfetcher.app.pages.convert.DocumentPage;
+import svfetcher.app.pages.fetch.FetchPage;
 import svfetcher.app.sv.DocumentFetchTask;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.Story;
-import svfetcher.app.pages.convert.DocumentPage;
-import svfetcher.app.pages.fetch.FetchPage;
 
 /**
  *
@@ -25,6 +26,7 @@ public class LinkPage extends AbstractPage {
   protected SV sv;
 
   TextField urlField;
+  CheckBox ignoreTM;
 
   @Override
   public String pathFragment() {
@@ -46,7 +48,9 @@ public class LinkPage extends AbstractPage {
 
     urlField.setText(navDataAtIndex(0));
 
-    return new VBox(8, urlField);
+    ignoreTM = new CheckBox("Ignore threadmarks");
+
+    return new VBox(8, urlField, ignoreTM);
   }
 
   @Override
@@ -54,6 +58,10 @@ public class LinkPage extends AbstractPage {
     setTitle("Pick url to fetch");
     showNotifier();
     urlField.setDisable(false);
+  }
+
+  boolean isIgnoringThreadmarks() {
+    return ignoreTM.isSelected();
   }
 
   void showNotifier() {
@@ -78,7 +86,7 @@ public class LinkPage extends AbstractPage {
     return followup((TaskedResultSupplier<Story>) supplier -> {
       return supplier.get(() -> {
         urlField.setDisable(true);
-        return new FetchStoryLinksTask(sv, url);
+        return new FetchStoryTask(sv, url, isIgnoringThreadmarks());
       })
         .setOnCancelled(h -> ready())
         .setOnFailed(h -> ready())

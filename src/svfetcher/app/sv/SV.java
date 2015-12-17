@@ -64,47 +64,29 @@ public class SV extends HTMLLoader {
     return request.getUrl();
   }
 
-  public DocumentResourceQuery<Story> threadmarks(String threadLink) {
-    String thread = Strings.trim(threadLink, "/");
-
-    String threadSlug = isSVLink(thread);
-    boolean fullUrl = threadSlug != null && !threadSlug.equalsIgnoreCase(thread);
-    if (fullUrl)
-      api.setApiAddress(apiServer(thread));
-
-    ServerRequest request = api.resolve("threads/" + threadSlug + "/threadmarks");
+  public DocumentResourceQuery<Story> story(String threadLink, boolean fromThreadmarks) {
+    String appendage = fromThreadmarks ? "threadmarks" : null;
+    ServerRequest request = threadRequest(threadLink, appendage);
     cache.forget(request.getFullUrl());
 
     return query(request, document -> {
-      Story story;
-      if (document == null) {
-        if (!fullUrl)
-          return null;
+      Story story = null;
 
-        ServerRequest firstPostRequest = api.resolve("threads/" + threadSlug);
-        cache.forget(firstPostRequest.getFullUrl());
-
-        DocumentResourceQuery<Story> post = query(firstPostRequest, doc2 -> {
-          if (doc2 == null)
-            return null;
-
-          return storyParser.fromPost(doc2.getDocumentElement());
-        });
-
+      if (document != null) {
+        story = storyParser.fromPost(document.getDocumentElement());
+        story.setSource(new Source(threadLink));
+      } else if (fromThreadmarks) {
+        DocumentResourceQuery<Story> indexQuery = story(threadLink, false);
         try {
-          story = post.executeQuery();
-          if (story == null) {
-            post.rethrow();
-            return null;
-          }
-        } catch (Exception ex) {
-          request.setFailure(ex);
+          story = indexQuery.executeQuery();
+          if (story == null)
+            indexQuery.rethrow();
+        } catch (Exception e) {
+          request.setFailure(e);
           return null;
         }
-      } else
-        story = storyParser.fromPage(document.getDocumentElement());
+      }
 
-      story.setSource(new Source(threadLink));
 
       return story;
     });
@@ -165,6 +147,22 @@ public class SV extends HTMLLoader {
     } catch (MalformedURLException ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  private ServerRequest threadRequest(String threadLink, String appendage) {
+    String thread = Strings.trim(threadLink, "/");
+
+    String threadSlug = isSVLink(thread);
+    boolean fullUrl = threadSlug != null && !threadSlug.equalsIgnoreCase(thread);
+    if (fullUrl)
+      api.setApiAddress(apiServer(thread));
+
+    if (appendage == null)
+      appendage = "";
+    else
+      appendage = "/" + appendage;
+
+    return api.resolve("threads/" + Strings.trim(threadSlug, "/") + appendage);
   }
 
 }

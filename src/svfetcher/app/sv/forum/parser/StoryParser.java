@@ -3,6 +3,7 @@ package svfetcher.app.sv.forum.parser;
 import ankh.utils.Strings;
 import ankh.xml.dom.crawler.Crawler;
 import java.util.ArrayList;
+import java.util.List;
 import org.w3c.dom.Node;
 import svfetcher.app.story.Source;
 import svfetcher.app.sv.forum.Post;
@@ -31,29 +32,26 @@ public class StoryParser extends Parser<Story> {
     }
   };
 
+  public String parseTitle(Node node) {
+    return parseTitle(node, null);
+  }
+  
+  public List<Source> parseThreadmarks(Node node) {
+    return parseThreadmarks(node, null);
+  }
+
   @Override
   public Story fromPage(Node node, Object... args) {
+    XMatcher matcher = pickMatcher(node);
+
     Story s = new Story();
+    s.setTitle(parseTitle(node, matcher));
 
-    Crawler dom = new Crawler(node);
-    XMatcher matcher = matchers.pickMatcher(dom);
-    if (matcher == null)
-      throw new RuntimeException("Can't parse threadmarks");
+    List<Source> threadmarks = parseThreadmarks(node, matcher);
 
-    s.setTitle(matcher.title());
-
-    for (Node n : matcher.threadmarks()) {
-      String url = attr(n, "href");
-
-      if (url.matches("(?i)(https?://)?([^/]+)/members/[^\\.]+\\.\\d+.*"))
-        continue;
-
-      Source source = new Source(url);
-      source.setName(Strings.trim(n.getTextContent(), "-, \t\r\n"));
-
+    for (Source source : threadmarks) {
       Post p = new Post();
       p.setSource(source);
-
       s.addSection(p);
     }
 
@@ -63,6 +61,41 @@ public class StoryParser extends Parser<Story> {
   @Override
   public Story fromPost(Node node, Object... args) {
     return fromPage(node, args);
+  }
+
+  private XMatcher pickMatcher(Node node) {
+    Crawler dom = new Crawler(node);
+    XMatcher matcher = matchers.pickMatcher(dom);
+    if (matcher == null)
+      throw new RuntimeException("Can't parse threadmarks");
+    return matcher;
+  }
+
+  private String parseTitle(Node node, XMatcher matcher) {
+    if (matcher == null)
+      matcher = pickMatcher(node);
+    
+    return matcher.title();
+  }
+
+  private List<Source> parseThreadmarks(Node node, XMatcher matcher) {
+    if (matcher == null)
+      matcher = pickMatcher(node);
+
+    List<Source> threadmarks = new ArrayList<>();
+    for (Node n : matcher.threadmarks()) {
+      String url = attr(n, "href");
+
+      if (url.matches("(?i)(https?://)?([^/]+)/members/[^\\.]+\\.\\d+.*"))
+        continue;
+
+      Source source = new Source(url);
+      source.setName(Strings.trim(n.getTextContent(), "-, \t\r\n"));
+
+      threadmarks.add(source);
+    }
+
+    return threadmarks;
   }
 
 }
