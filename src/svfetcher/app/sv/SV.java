@@ -43,6 +43,8 @@ public class SV extends HTMLLoader {
       Matcher m = Pattern.compile("forums\\..*/threads/([^/#\\?]+)", Pattern.CASE_INSENSITIVE).matcher(link);
       if (m.find())
         return m.group(1);
+
+      return null;
     }
 
     return link;
