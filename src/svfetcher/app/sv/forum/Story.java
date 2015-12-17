@@ -35,7 +35,8 @@ public class Story extends svfetcher.app.story.Story<Post> {
   public long contentsLength() {
     long charLength = 0;
     for (Post post : values())
-      charLength += post.stringContents().length();
+      if (!post.isEmpty())
+        charLength += post.getContents().length();
     return charLength;
   }
 

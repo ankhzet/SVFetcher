@@ -11,13 +11,18 @@ import svfetcher.app.story.Section;
  */
 public class Post extends Section<String> {
 
+  public boolean isEmpty() {
+    String contents = getContents();
+    return contents == null || contents.isEmpty();
+  }
+
   public boolean setContentsFromXML(Node node) {
     NodeSerializer serializer = new NodeSerializer();
     String serialized = serializer.serialize(node);
     serialized = FB2Cleaner.cleanup(serialized);
 
     setContents(serialized);
-    
+
     return !serialized.isEmpty();
   }
 

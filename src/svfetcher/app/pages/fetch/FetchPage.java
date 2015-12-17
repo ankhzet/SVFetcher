@@ -1,29 +1,27 @@
 package svfetcher.app.pages.fetch;
 
-import svfetcher.app.pages.fetch.stated.SectionsStateList;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javafx.beans.InvalidationListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.*;
+import javafx.collections.ListChangeListener.Change;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.action.Action;
-import svfetcher.app.story.Source;
 import svfetcher.app.sv.SV;
 import svfetcher.app.sv.forum.Post;
 import svfetcher.app.sv.forum.Story;
 import svfetcher.app.pages.compose.SavePage;
+import svfetcher.app.pages.fetch.stated.SectionsStateList;
 import svfetcher.app.pages.fetch.stated.StatedSource;
+import svfetcher.app.pages.fetch.traversable.MappableSourcesListHelper;
+import svfetcher.app.pages.fetch.traversable.SourcesListHelper;
 import svfetcher.app.pages.pick.LinkPage;
-import svfetcher.app.utils.SectionMapping;
+import svfetcher.app.story.Source;
 
 /**
  *
@@ -34,7 +32,9 @@ public class FetchPage extends AbstractPage {
   @DependencyInjection()
   protected SV sv;
 
-  SectionsStateList<Source> sectionsList;
+  SourcesListHelper sections;
+
+  Button restore;
 
   @Override
   public String pathFragment() {
@@ -43,7 +43,9 @@ public class FetchPage extends AbstractPage {
 
   @Override
   protected Node buildNode() {
-    SourceList list = new SourceList(sectionsList);
+    sections = new MappableSourcesListHelper(story().sections());
+
+    SourceList list = new SourceList(sections.statedList());
     list.setPickHandler(ref -> {
       SourceCell cell = ref.get();
       if (cell == null)
@@ -60,22 +62,11 @@ public class FetchPage extends AbstractPage {
 
     Button delete = new Button("X");
     delete.setOnAction(h -> {
-      List<StatedSource<Source>> selected = new ArrayList(selectedItems(list));
-      sectionsList.removeAll(selected);
-      Story story = story();
-      for (StatedSource<Source> stated : selected) {
-        Source source = stated.getItem();
-        story.remove(source);
+      List<Source> selected = new ArrayList<>();
+      for (StatedSource<Source> stated : selectedItems(list))
+        selected.add(stated.getItem());
 
-        String url = source.getUrl();
-        SectionMapping mapping = SectionMapping.model().find(url).first();
-        if (mapping == null)
-          mapping = new SectionMapping(url);
-
-        mapping.setSuppressed(true);
-
-        SectionMapping.saveModel(mapping);
-      }
+      sections.hideAll(selected);
     });
     list.getSelectionModel()
       .getSelectedIndices()
@@ -84,16 +75,49 @@ public class FetchPage extends AbstractPage {
       );
     delete.setDisable(selectedItems(list).isEmpty());
 
-    HBox del = new HBox(delete);
+    restore = new Button("Show deleted links");
+
+    ObservableList<Source> hiddenItems = sections.getHiddenItems();
+    hiddenItems.addListener(this::onHiddenSourcesListChanged);
+    disableRestoreButton(hiddenItems.isEmpty());
+
+    restore.setOnAction(h -> sections.showAll());
+
+    sections.getBase().addListener(this::onShowedSourcesListChanged);
+
+    HBox del = new HBox(8, delete, restore);
     HBox.setHgrow(del, Priority.ALWAYS);
 
     Button revoke = new Button("Revoke");
     revoke.setOnAction(h -> showNotification());
+
     HBox hbox = new HBox(del, revoke);
     VBox vbox = new VBox(8, list, hbox);
     VBox.setVgrow(list, Priority.ALWAYS);
 
     return vbox;
+  }
+
+  protected void onHiddenSourcesListChanged(Change<? extends Source> c) {
+    disableRestoreButton(c.getList().isEmpty());
+  }
+
+  protected void onShowedSourcesListChanged(Change<? extends Source> c) {
+    Story story = story();
+    SectionsStateList<Source> statedList = sections.statedList();
+    ObservableList<? extends Source> showed = c.getList();
+
+    for (Source source : showed) {
+      Post post = story.get(source);
+      if (post == null || post.isEmpty()) {
+        StatedSource<Source> stated = statedList.stated(source);
+        stated.setFetched(false);
+      }
+    }
+  }
+
+  void disableRestoreButton(boolean disable) {
+    restore.setDisable(disable);
   }
 
   ObservableList<StatedSource<Source>> selectedItems(SourceList list) {
@@ -103,8 +127,7 @@ public class FetchPage extends AbstractPage {
   @Override
   protected void done() {
     super.done();
-    _story = null;
-    sectionsList = null;
+    sections = null;
   }
 
   @Override
@@ -112,88 +135,15 @@ public class FetchPage extends AbstractPage {
     Story story = story();
     setTitle("Fetching \"" + story.getTitle() + "\"");
 
-    sectionsList = new SectionsStateList(FXCollections.observableArrayList(story.sections()));
-
-    _story = filtered(story);
-
     showNotification();
   }
 
-  private Story _story;
-
   Story story() {
-    if (_story == null) {
-      Story source = navDataAtIndex(0, () -> new Story());
-      _story = source;
-      Map<Source, Post> posts = filterSuppressed(_story);
-      _story.clear();
-      _story.putAll(posts);
-    }
-    return _story;
-  }
-
-  Map<Source, Post> filterSuppressed(Map<Source, Post> posts) {
-    Map<String, Source> sourcesMap = new LinkedHashMap<>();
-    List<String> urls = new ArrayList<>();
-    for (Source source : posts.keySet()) {
-      String url = source.getUrl();
-      sourcesMap.put(url, source);
-      urls.add(url);
-    }
-
-    List<SectionMapping> mappings = SectionMapping.model()
-      .whereIn("url", urls.toArray())
-      .get();
-
-    Map<String, SectionMapping> filtered = SectionMapping.filterMappings(mappings, urls);
-
-    Map<Source, Post> filteredSources = new LinkedHashMap<>();
-    for (String url : filtered.keySet()) {
-      Source source = sourcesMap.get(url);
-
-      SectionMapping mapping = filtered.get(url);
-      if (mapping != null && mapping.getTitle() != null)
-        source.setName(mapping.getTitle());
-
-      filteredSources.put(source, posts.get(source));
-    }
-
-    return filteredSources;
-  }
-
-  Map<Source, Post> filterEmpty(Map<Source, Post> sources) {
-    LinkedHashMap<Source, Post> nonEmpty = new LinkedHashMap<>();
-
-    for (Source source : sources.keySet()) {
-      Post post = sources.get(source);
-      if (post != null && post.getContents() != null)
-        nonEmpty.put(source, post);
-    }
-
-    return nonEmpty;
-  }
-
-  Story filtered(Story story) {
-    Map<Source, Post> posts = filterEmpty(story);
-    story.clear();
-    story.putAll(posts);
-
-    Map<Source, StatedSource<Source>> sections = new LinkedHashMap<>();
-    for (StatedSource<Source> section : sectionsList) {
-      Source source = section.getItem();
-      sections.put(source, section);
-    }
-
-    for (Post post : posts.values()) {
-      StatedSource<Source> section = sections.get(post.getSource());
-      section.setFetched(post.getContents() != null);
-    }
-
-    return story;
+    return navDataAtIndex(0, () -> new Story());
   }
 
   void showNotification() {
-    boolean hasUnfinished = sectionsList.hasUnfinished();
+    boolean hasUnfinished = sections.statedList().hasUnfinished();
     notify(
       hasUnfinished ? "Ready to fetch posts" : "All sections checked",
       new Action(
@@ -204,11 +154,11 @@ public class FetchPage extends AbstractPage {
   }
 
   boolean fetch() {
-    if (!sectionsList.hasUnfinished())
-      return proceed(SavePage.class, filtered(story()));
+    if (!sections.statedList().hasUnfinished())
+      return proceed();
 
     return followup((TaskedResultSupplier<Post>) supplier -> {
-      return supplier.get(() -> new FetchTask(sv, sectionsList))
+      return supplier.get(() -> new FetchTask(sv, sections.statedList()))
         .setError("Failed to fetch post")
         .setOnFailed(h -> {})
         .setOnCancelled(h -> showNotification())
@@ -217,6 +167,19 @@ public class FetchPage extends AbstractPage {
           fetch();
         });
     });
+  }
+
+  boolean proceed() {
+    Story story = story();
+    LinkedHashMap<Source, Post> fetched = new LinkedHashMap<>();
+    for (Source source : sections.getBase()) {
+      Post post = story.get(source);
+      if (post != null && !post.isEmpty())
+        fetched.put(source, post);
+    }
+    story.clear();
+    story.putAll(fetched);
+    return proceed(SavePage.class, story);
   }
 
 }
