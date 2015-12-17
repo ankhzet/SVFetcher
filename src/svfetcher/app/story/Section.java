@@ -48,8 +48,9 @@ public class Section<Content> {
     this.contents = contents;
   }
 
-  public String stringContents() {
-    return contents != null ? contents.toString() : null;
+  @Override
+  public String toString() {
+    return (contents instanceof String) ? (String) contents : contents.toString();
   }
 
 }

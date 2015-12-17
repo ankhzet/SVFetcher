@@ -73,8 +73,12 @@ public class SVStoryFB2Builder<T extends svfetcher.app.story.Section<?>> extends
       @Override
       protected Node formNode(Story<T> data, Node parent, String path) {
         ContainerContainerNode holder = new ContainerContainerNode();
-        for (Entry<Source, T> post : data.entrySet())
-          holder.add(new Section(encodeEntities(post.getKey().getName()), post.getValue().stringContents()));
+        for (Entry<Source, T> entry : data.entrySet()) {
+          Source source = entry.getKey();
+          T section = entry.getValue();
+          String contents = section.toString();
+          holder.add(new Section(encodeEntities(source.getName()), contents));
+        }
         return append(parent, holder);
       }
 
