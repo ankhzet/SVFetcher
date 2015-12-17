@@ -10,6 +10,16 @@ import svfetcher.app.story.Source;
  */
 public class Story extends svfetcher.app.story.Story<Post> {
 
+  private boolean hasThreadmarks;
+
+  public boolean hasThreadmarks() {
+    return hasThreadmarks;
+  }
+
+  public void setHasThreadmarks(boolean hasThreadmarks) {
+    this.hasThreadmarks = hasThreadmarks;
+  }
+
   @Override
   public void addSection(Post section) {
     if (getAuthor() == null)

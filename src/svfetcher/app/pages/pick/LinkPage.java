@@ -1,6 +1,5 @@
 package svfetcher.app.pages.pick;
 
-import ankh.http.cached.CacheableClient;
 import ankh.ioc.annotations.DependencyInjection;
 import ankh.pages.AbstractPage;
 import java.net.URL;
@@ -25,6 +24,7 @@ public class LinkPage extends AbstractPage {
   @DependencyInjection()
   protected SV sv;
 
+  Node wholeNode;
   TextField urlField;
   CheckBox ignoreTM;
 
@@ -50,14 +50,14 @@ public class LinkPage extends AbstractPage {
 
     ignoreTM = new CheckBox("Ignore threadmarks");
 
-    return new VBox(8, urlField, ignoreTM);
+    return wholeNode = new VBox(8, urlField, ignoreTM);
   }
 
   @Override
   protected void ready() {
     setTitle("Pick url to fetch");
     showNotifier();
-    urlField.setDisable(false);
+    setControlsEnabled(true);
   }
 
   boolean isIgnoringThreadmarks() {
@@ -77,6 +77,11 @@ public class LinkPage extends AbstractPage {
     notify(message, action);
   }
 
+  void setControlsEnabled(boolean enabled) {
+    if (wholeNode != null)
+      wholeNode.setDisable(!enabled);
+  }
+
   boolean isSVLink() {
     String threadSlug = sv.isSVLink(urlField.getText());
     return threadSlug != null;
@@ -85,7 +90,7 @@ public class LinkPage extends AbstractPage {
   boolean fetchLinks(String url) {
     return followup((TaskedResultSupplier<Story>) supplier -> {
       return supplier.get(() -> {
-        urlField.setDisable(true);
+        setControlsEnabled(false);
         return new FetchStoryTask(sv, url, isIgnoringThreadmarks());
       })
         .setOnCancelled(h -> ready())
@@ -100,7 +105,7 @@ public class LinkPage extends AbstractPage {
   boolean convertPage(String path) {
     return followup((TaskedResultSupplier<Document>) supplier -> {
       return supplier.get(() -> {
-        urlField.setDisable(true);
+        setControlsEnabled(false);
         return new DocumentFetchTask(new URL(path));
       })
         .setOnCancelled(h -> ready())

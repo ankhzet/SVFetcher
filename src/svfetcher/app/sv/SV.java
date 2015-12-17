@@ -48,22 +48,6 @@ public class SV extends HTMLLoader {
     return link;
   }
 
-  public URL threadmarksLink(String from) {
-    return threadLink(Strings.trim(from, "/") + "/threadmarks");
-  }
-
-  public URL threadLink(String from) {
-    String thread = Strings.trim(from, "/");
-
-    String threadSlug = isSVLink(thread);
-    boolean fullUrl = threadSlug != null && !threadSlug.equalsIgnoreCase(thread);
-    if (fullUrl)
-      api.setApiAddress(apiServer(thread));
-
-    ServerRequest request = api.resolve("threads/" + threadSlug);
-    return request.getUrl();
-  }
-
   public DocumentResourceQuery<Story> story(String threadLink, boolean fromThreadmarks) {
     String appendage = fromThreadmarks ? "threadmarks" : null;
     ServerRequest request = threadRequest(threadLink, appendage);
@@ -87,6 +71,8 @@ public class SV extends HTMLLoader {
         }
       }
 
+      if (story != null)
+        story.setHasThreadmarks(document != null);
 
       return story;
     });

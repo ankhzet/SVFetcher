@@ -1,5 +1,6 @@
 package svfetcher.app.pages.fetch;
 
+import ankh.ui.PseudoClassStateProperty;
 import java.lang.ref.WeakReference;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -191,27 +192,5 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
   private static final PseudoClass DELETING_PSEUDOCLASS = PseudoClass.getPseudoClass(StatedSource.STATE_DELETING);
 
   private static final PseudoClass DETAILS_PSEUDOCLASS = PseudoClass.getPseudoClass("details");
-
-}
-
-class PseudoClassStateProperty extends ReadOnlyBooleanWrapper {
-
-  private final Node node;
-  private final PseudoClass pseudoclass;
-
-  public PseudoClassStateProperty(Node node, PseudoClass pseudoclass) {
-    this.node = node;
-    this.pseudoclass = pseudoclass;
-  }
-
-  @Override
-  protected void invalidated() {
-    node.pseudoClassStateChanged(pseudoclass, get());
-  }
-
-  @Override
-  public String getName() {
-    return pseudoclass.getPseudoClassName();
-  }
 
 }
