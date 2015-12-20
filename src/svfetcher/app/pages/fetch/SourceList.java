@@ -38,6 +38,7 @@ public class SourceList extends ListView<StatedSource<Source>> {
       cell.pickHandlerProperty().bind(pickHandlerProperty());
       return cell;
     });
+    setEditable(true);
 
     getSelectionModel()
       .setSelectionMode(SelectionMode.MULTIPLE);

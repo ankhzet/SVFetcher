@@ -34,6 +34,10 @@
 .link-list .cell:selected .link {
   -fx-text-fill: white;
 }
+.link-list .cell:selected .text-field.link {
+  -fx-text-fill: black;
+  -fx-padding: 1 3 0 3;
+}
 
 .link-list .cell:selected .progress {
   -fx-background-color: white;

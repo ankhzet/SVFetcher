@@ -19,6 +19,8 @@ import javafx.scene.layout.VBox;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import svfetcher.app.story.Source;
@@ -41,12 +43,15 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
   ProgressIndicator progress;
 
   Node graphic;
+  TextField edit;
+  HBox linkHolder;
 
   ObservableList<StatedSource<Source>> list;
 
   public SourceCell(ObservableList<StatedSource<Source>> list) {
     this.list = list;
 
+    setEditable(true);
     setText(null);
     getStyleClass().add("cell");
 
@@ -66,7 +71,9 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
     Button info = new Button("i");
     info.getStyleClass().add("info-button");
 
-    VBox i = new VBox(title, link);
+    linkHolder = new HBox(link);
+
+    VBox i = new VBox(title, linkHolder);
     i.getStyleClass().add("info");
     HBox.setHgrow(i, Priority.ALWAYS);
 
@@ -113,6 +120,51 @@ public class SourceCell extends ListCell<StatedSource<Source>> {
 
       setGraphic(graphic);
     }
+  }
+
+  @Override
+  public void startEdit() {
+    super.startEdit();
+
+    TextField editNode = getEditNode();
+    editNode.setText(link.getText());
+
+    editNode.selectAll();
+    linkHolder.getChildren().setAll(editNode);
+    editNode.requestFocus();
+  }
+
+  @Override
+  public void cancelEdit() {
+    super.cancelEdit();
+    linkHolder.getChildren().setAll(link);
+  }
+
+  private TextField getEditNode() {
+    if (edit == null) {
+      edit = new TextField();
+      HBox.setHgrow(edit, Priority.ALWAYS);
+
+      edit.focusedProperty().addListener((l, o, focused) -> {
+        if (!focused) {
+          StatedSource<Source> item = getItem();
+          item.getItem().setUrl(edit.getText());
+          commitEdit(item);
+        }
+      });
+
+      edit.setOnKeyPressed((KeyEvent t) -> {
+        if (t.getCode() == KeyCode.ENTER) {
+          StatedSource<Source> item = getItem();
+          item.getItem().setUrl(edit.getText());
+          commitEdit(item);
+        } else if (t.getCode() == KeyCode.ESCAPE)
+          cancelEdit();
+      });
+
+      edit.getStyleClass().add("link");
+    }
+    return edit;
   }
 
   private void deleteItem(ActionEvent e) {
