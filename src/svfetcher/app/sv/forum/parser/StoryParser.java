@@ -19,7 +19,7 @@ public class StoryParser extends Parser<Story> {
     {
       add(new XMatcher(
         "//fieldset[contains(@class, 'breadcrumb')]/span/span/a/span",
-        "//li[contains(@class, 'threadmarkItem')]/a"
+        "//ol/li[contains(@class, 'threadmarkItem')]/a"
       ));
       add(new XMatcher(
         "//fieldset[contains(@class, 'breadcrumb')]/span/span/a/span",
