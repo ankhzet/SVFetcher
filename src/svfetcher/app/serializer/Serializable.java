@@ -16,12 +16,14 @@
  */
 package svfetcher.app.serializer;
 
+import java.io.InputStream;
+
 /**
  *
  * @author Ankh Zet (ankhzet@gmail.com)
  */
 public interface Serializable {
 
-  String serialize();
+  InputStream serialize();
 
 }
