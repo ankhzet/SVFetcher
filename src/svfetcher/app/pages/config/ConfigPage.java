@@ -7,10 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import svfetcher.app.SVFConfig;
-import svfetcher.app.pages.config.ui.AccessoriedConfigNode;
-import svfetcher.app.pages.config.ui.ConfigBox;
-import svfetcher.app.pages.config.ui.ConfigNode;
-import svfetcher.app.pages.config.ui.ConfigUI;
+import svfetcher.app.pages.config.ui.*;
 
 /**
  *
@@ -45,6 +42,10 @@ public class ConfigPage extends AbstractPage {
             simple("Default server", config.apiServerProperty()),
             simple("Cache storage", config.apiCacheDirProperty()),
             simple("Cache for (minutes)", config.apiCacheTtlProperty())
+        ),
+        box("Debug",
+            check("Use cache for index",
+                   config.debugProperty())
         )
       );
 
@@ -64,6 +65,10 @@ public class ConfigPage extends AbstractPage {
 
   ConfigNode simple(String caption, StringProperty property) {
     return new ConfigNode(caption + ":", property);
+  }
+
+  ConfigNode check(String caption, StringProperty property) {
+    return new CheckboxConfigNode(caption, property);
   }
 
   ConfigNode access(String caption, StringProperty property, EventHandler<ActionEvent> h) {

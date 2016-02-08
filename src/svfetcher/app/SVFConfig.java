@@ -36,8 +36,21 @@ public class SVFConfig extends AppConfig {
     set(C_SAVEFOLDER, saveFolder);
   }
 
+  public boolean getDebug() {
+    return debugProperty().asBoolean(false);
+  }
+
+  public void setDebug(boolean debug) {
+    set(C_SAVEFOLDER, Boolean.toString(debug));
+  }
+
   private static final String C_READER = "fb2-reader";
   private static final String C_SAVEFOLDER = "default-folder";
+  private static final String C_DEBUG = "debug";
+
+  public ConvertableProperty debugProperty() {
+    return property(C_DEBUG);
+  }
 
   public StringProperty readerProperty() {
     return property(C_READER);
