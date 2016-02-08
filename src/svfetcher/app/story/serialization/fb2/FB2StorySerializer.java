@@ -15,13 +15,15 @@ import java.io.InputStream;
  */
 public class FB2StorySerializer<T extends Section<?>> extends AbstractStorySerializer<T> {
 
+  public static final String EXTENSION = ".fb2";
+  
   public FB2StorySerializer(Story<T> story) {
     super(story);
   }
 
   @Override
   public String filename() {
-    return super.filename() + ".fb2";
+    return super.filename() + EXTENSION;
   }
 
   @Override
