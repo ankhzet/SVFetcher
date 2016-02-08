@@ -86,7 +86,7 @@ public class StoryParser extends Parser<Story> {
     for (Node n : matcher.threadmarks()) {
       String url = attr(n, "href");
 
-      if (url.matches("(?i)(https?://)?([^/]+)/members/[^\\.]+\\.\\d+.*"))
+      if (url.matches("(?i)(https?://)?([^/]+)/members/([^\\.]+\\.)?\\d+.*"))
         continue;
 
       Source source = new Source(url);
