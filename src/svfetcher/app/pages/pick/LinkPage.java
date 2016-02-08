@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.action.Action;
 import org.w3c.dom.Document;
+import svfetcher.app.SVFConfig;
 import svfetcher.app.pages.convert.DocumentPage;
 import svfetcher.app.pages.fetch.FetchPage;
 import svfetcher.app.sv.DocumentFetchTask;
@@ -20,6 +21,9 @@ import svfetcher.app.sv.forum.Story;
  * @author Ankh Zet (ankhzet@gmail.com)
  */
 public class LinkPage extends AbstractPage {
+
+  @DependencyInjection()
+  protected SVFConfig config;
 
   @DependencyInjection()
   protected SV sv;
@@ -91,6 +95,7 @@ public class LinkPage extends AbstractPage {
     return followup((TaskedResultSupplier<Story>) supplier -> {
       return supplier.get(() -> {
         setControlsEnabled(false);
+        sv.uncachedIndex = !config.getDebug();
         return new FetchStoryTask(sv, url, isIgnoringThreadmarks());
       })
         .setOnCancelled(h -> ready())

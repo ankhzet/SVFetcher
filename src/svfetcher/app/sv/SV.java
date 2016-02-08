@@ -35,6 +35,8 @@ public class SV extends HTMLLoader {
   @DependencyInjection()
   protected CacheableClient cache;
 
+  public boolean uncachedIndex = true;
+
   public String isSVLink(String link) {
     if (link == null || (link = link.trim()).isEmpty())
       return null;
@@ -53,7 +55,9 @@ public class SV extends HTMLLoader {
   public DocumentResourceQuery<Story> story(String threadLink, boolean fromThreadmarks) {
     String appendage = fromThreadmarks ? "threadmarks" : null;
     ServerRequest request = threadRequest(threadLink, appendage);
-    cache.forget(request.getFullUrl());
+
+    if (uncachedIndex)
+      cache.forget(request.getFullUrl());
 
     return query(request, document -> {
       Story story = null;
