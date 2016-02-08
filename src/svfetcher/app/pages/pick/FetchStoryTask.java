@@ -14,7 +14,7 @@ public class FetchStoryTask extends AbstractURLFetchTask<SV, Document, Story> {
 
   String url;
   boolean ignoreThreadmarks;
-  
+
   public FetchStoryTask(SV source, String url, boolean ignoreThreadmarks) {
     super(source);
     this.url = url;

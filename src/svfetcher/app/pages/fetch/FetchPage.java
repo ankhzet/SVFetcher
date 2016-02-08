@@ -160,7 +160,8 @@ public class FetchPage extends AbstractPage {
     return followup((TaskedResultSupplier<Post>) supplier -> {
       return supplier.get(() -> new FetchTask(sv, sections.statedList()))
         .setError("Failed to fetch post")
-        .setOnFailed(h -> {})
+        .setOnFailed(h -> {
+        })
         .setOnCancelled(h -> showNotification())
         .schedule(post -> {
           story().addSection(post);

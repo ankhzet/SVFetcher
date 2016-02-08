@@ -138,9 +138,9 @@ public class SavePage extends AbstractPage {
           String diff = Utils.humanReadableByteCount(newSize);
           if ((oldSize > 0) && (abs > 0))
             diff += String.format(" (%s%s)", abs < 0 ? "-" : "+", Utils.humanReadableByteCount(abs));
-          
+
           diff = "[" + diff + "]";
-          
+
           notify(
             String.format("%s Successfuly saved to %s", diff, savedTo.getAbsolutePath()),
             new Action("Open", (h) -> open(savedTo))

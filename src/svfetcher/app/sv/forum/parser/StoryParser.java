@@ -35,7 +35,7 @@ public class StoryParser extends Parser<Story> {
   public String parseTitle(Node node) {
     return parseTitle(node, null);
   }
-  
+
   public List<Source> parseThreadmarks(Node node) {
     return parseThreadmarks(node, null);
   }
@@ -74,7 +74,7 @@ public class StoryParser extends Parser<Story> {
   private String parseTitle(Node node, XMatcher matcher) {
     if (matcher == null)
       matcher = pickMatcher(node);
-    
+
     return matcher.title();
   }
 
