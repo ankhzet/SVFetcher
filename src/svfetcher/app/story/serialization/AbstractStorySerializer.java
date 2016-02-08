@@ -1,6 +1,5 @@
 package svfetcher.app.story.serialization;
 
-import svfetcher.app.serializer.Serializable;
 import svfetcher.app.serializer.Writable;
 import svfetcher.app.story.Author;
 import svfetcher.app.story.Section;
@@ -12,7 +11,7 @@ import svfetcher.app.sv.forum.User;
  * @author Ankh Zet (ankhzet@gmail.com)
  * @param <T>
  */
-public abstract class AbstractStorySerializer<T extends Section<?>> implements Serializable, Writable {
+public abstract class AbstractStorySerializer<T extends Section<?>> implements Writable {
 
   protected final Story<T> story;
 

@@ -5,6 +5,8 @@ import svfetcher.app.story.serialization.fb2.builder.SVStoryFB2Builder;
 import svfetcher.app.story.Story;
 import svfetcher.app.story.serialization.AbstractStorySerializer;
 import ankh.fb2.nodes.Node;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
  *
@@ -13,22 +15,25 @@ import ankh.fb2.nodes.Node;
  */
 public class FB2StorySerializer<T extends Section<?>> extends AbstractStorySerializer<T> {
 
+  public static final String EXTENSION = ".fb2";
+  
   public FB2StorySerializer(Story<T> story) {
     super(story);
   }
 
   @Override
   public String filename() {
-    return super.filename() + ".fb2";
+    return super.filename() + EXTENSION;
   }
 
   @Override
-  public String serialize() {
+  public InputStream serialize() {
     SVStoryFB2Builder<T> builder = new SVStoryFB2Builder<>();
 
     Node node = builder.build(story);
+    String contents = node.serialize();
 
-    return node.serialize();
+    return new ByteArrayInputStream(contents.getBytes());
   }
 
 }
