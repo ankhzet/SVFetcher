@@ -6,7 +6,11 @@ import ankh.tasks.RunTask;
 import ankh.utils.D;
 import ankh.utils.Utils;
 import java.io.File;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.Optional;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -19,6 +23,7 @@ import svfetcher.app.SVFConfig;
 import svfetcher.app.serializer.Writable;
 import svfetcher.app.serializer.Writer;
 import svfetcher.app.story.serialization.fb2.FB2StorySerializer;
+import svfetcher.app.story.serialization.zip.Zip;
 import svfetcher.app.sv.forum.Story;
 
 /**
@@ -29,6 +34,8 @@ public class SavePage extends AbstractPage {
 
   @DependencyInjection()
   protected SVFConfig config;
+
+  private boolean asZip = true;
 
   private Node row(String labelCaption, Node node) {
     Label label = new Label(labelCaption);
@@ -54,11 +61,18 @@ public class SavePage extends AbstractPage {
       });
     });
 
+    CheckBox saveAsZip = new CheckBox("Put in ZIP archive");
+    saveAsZip.setSelected(asZip);
+    saveAsZip.setOnAction(h -> {
+      asZip = saveAsZip.isSelected();
+    });
+
     return new VBox(8,
                     row("Author:", link),
                     row("Title:", titleField),
                     row("Chapters:", new Label(String.valueOf(story.size()))),
-                    row("Size:", new Label(Utils.humanReadableByteCount(story.contentsLength())))
+                    row("Size:", new Label(Utils.humanReadableByteCount(story.contentsLength()))),
+                    row("", saveAsZip)
     );
   }
 
@@ -78,16 +92,18 @@ public class SavePage extends AbstractPage {
     return navDataAtIndex(0, () -> new Story());
   }
 
-  boolean compose() {
-    Story story = story();
+  private Writable buildWritable(Writable base) {
+    CustomWritabe writable = new CustomWritabe(base);
 
-    FB2StorySerializer serializer = new FB2StorySerializer(story);
+    String extension = (asZip ? Zip.EXTENSION : FB2StorySerializer.EXTENSION);
+    String filename = CustomWritabe.flipExtension(writable.filename(), extension);
 
-    FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Fiction Book file", "*.fb2");
+    FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Fiction Book file", "*" + extension);
     FileChooser chooser = new FileChooser();
     chooser.getExtensionFilters().add(filter);
     chooser.setSelectedExtensionFilter(filter);
-    chooser.setInitialFileName(serializer.filename());
+
+    chooser.setInitialFileName(filename);
 
     String saveDir = config.getSaveFolder();
     if (!saveDir.isEmpty()) {
@@ -100,36 +116,43 @@ public class SavePage extends AbstractPage {
     File to = chooser.showSaveDialog(null);
 
     if (to == null)
+      return null;
+
+    filename = to.getAbsolutePath();
+    if (asZip) {
+      writable.setFilename(CustomWritabe.flipExtension(filename, FB2StorySerializer.EXTENSION));
+      writable = new CustomWritabe(new Zip(Collections.singletonList(writable)));
+    }
+
+    writable.setFilename(filename);
+
+    return writable;
+  }
+
+  boolean compose() {
+    Writable writable = buildWritable(new FB2StorySerializer(story()));
+    if (writable == null)
       return false;
 
+    String filename = writable.filename();
+
+    File to = new File(filename);
     long oldSize = to.exists() ? to.length() : 0;
-    String pathString = to.getAbsolutePath();
 
     return followup((TaskedResultSupplier<File>) supplier -> {
       return supplier.get(() -> {
-        return new RunTask<>(String.format("Saving to \"%s\"...", pathString), () -> {
+        return new RunTask<>(String.format("Saving to \"%s\"...", filename), () -> {
           Writer writer = new Writer();
-          writer.write(new Writable() {
-
-            @Override
-            public String filename() {
-              return pathString;
-            }
-
-            @Override
-            public String serialize() {
-              return serializer.serialize();
-            }
-          });
+          writer.write(writable);
           return to;
         });
       })
-        .setError("Failed to save to " + pathString)
+        .setError("Failed to save to " + filename)
         .schedule(savedTo -> {
           if (savedTo == null)
             return;
 
-          if (saveDir.isEmpty())
+          if (config.getSaveFolder().isEmpty())
             config.setSaveFolder(savedTo.getParent());
 
           long newSize = to.length();
@@ -169,6 +192,43 @@ public class SavePage extends AbstractPage {
     } catch (Exception e) {
       error("Failed to open " + file.getAbsolutePath(), e);
     }
+  }
+
+  private static class CustomWritabe implements Writable {
+
+    private final Writable writable;
+
+    public CustomWritabe(Writable writable) {
+      this.writable = writable;
+    }
+
+    private StringProperty filename;
+
+    public StringProperty filenameProperty() {
+      if (filename == null)
+        filename = new SimpleStringProperty(this, "filename", writable.filename());
+
+      return filename;
+    }
+
+    @Override
+    public String filename() {
+      return filenameProperty().get();
+    }
+
+    public void setFilename(String name) {
+      filenameProperty().set(name);
+    }
+
+    @Override
+    public InputStream serialize() {
+      return writable.serialize();
+    }
+
+    public static String flipExtension(String filename, String extension) {
+      return filename.replaceFirst("\\.[^\\.]+$", extension);
+    }
+
   }
 
 }
