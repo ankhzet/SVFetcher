@@ -102,6 +102,7 @@ public class SavePage extends AbstractPage {
     if (to == null)
       return false;
 
+    long oldSize = to.exists() ? to.length() : 0;
     String pathString = to.getAbsolutePath();
 
     return followup((TaskedResultSupplier<File>) supplier -> {
@@ -131,8 +132,17 @@ public class SavePage extends AbstractPage {
           if (saveDir.isEmpty())
             config.setSaveFolder(savedTo.getParent());
 
+          long newSize = to.length();
+          long delta = newSize - oldSize;
+          long abs = Math.abs(delta);
+          String diff = Utils.humanReadableByteCount(newSize);
+          if ((oldSize > 0) && (abs > 0))
+            diff += String.format(" (%s%s)", abs < 0 ? "-" : "+", Utils.humanReadableByteCount(abs));
+          
+          diff = "[" + diff + "]";
+          
           notify(
-            "Successfuly saved to " + savedTo.getAbsolutePath(),
+            String.format("%s Successfuly saved to %s", diff, savedTo.getAbsolutePath()),
             new Action("Open", (h) -> open(savedTo))
           );
         });
