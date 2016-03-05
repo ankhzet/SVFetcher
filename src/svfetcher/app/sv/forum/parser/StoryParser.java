@@ -1,6 +1,7 @@
 package svfetcher.app.sv.forum.parser;
 
 import ankh.utils.Strings;
+import ankh.utils.Utils;
 import ankh.xml.dom.crawler.Crawler;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class StoryParser extends Parser<Story> {
       ));
       add(new XMatcher(
         "//div[contains(@class, 'titleBar')]/h1",
-        "(//div[contains(@class, 'messageContent')])[1]/article//a"
+        "(.//div[contains(@class, 'messageContent')])[1]/article//a"
       ));
     }
   };
@@ -46,6 +47,15 @@ public class StoryParser extends Parser<Story> {
 
     Story s = new Story();
     s.setTitle(parseTitle(node, matcher));
+
+    String id = Utils.pass(Utils.isAny(args), (uid) -> {
+      return ((uid == null) || uid.isEmpty()) ? null : uid;
+    });
+    
+    if (id != null) {
+      node = Crawler.filter(node, "//*[contains(@id, '%s')]", id).first();
+      matcher = pickMatcher(node);      
+    }
 
     List<Source> threadmarks = parseThreadmarks(node, matcher);
 

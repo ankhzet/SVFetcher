@@ -42,9 +42,9 @@ public class SV extends HTMLLoader {
       return null;
 
     if (link.matches("(?i)^https?://.*")) {
-      Matcher m = Pattern.compile("forums\\..*/threads/([^/#\\?]+)", Pattern.CASE_INSENSITIVE).matcher(link);
+      Matcher m = Pattern.compile("forums\\..*/(threads|posts)/([^/#\\?]+)", Pattern.CASE_INSENSITIVE).matcher(link);
       if (m.find())
-        return m.group(1);
+        return m.group(2);
 
       return null;
     }
@@ -63,7 +63,11 @@ public class SV extends HTMLLoader {
       Story story = null;
 
       if (document != null) {
-        story = storyParser.fromPost(document.getDocumentElement());
+        String post = postByAnchor(threadLink);
+        if (post.equals(threadLink))
+          post = null;
+        
+        story = storyParser.fromPost(document.getDocumentElement(), post);
         story.setSource(new Source(threadLink));
       } else if (fromThreadmarks) {
         DocumentResourceQuery<Story> indexQuery = story(threadLink, false);
@@ -120,16 +124,23 @@ public class SV extends HTMLLoader {
     return new RedirectAvareQuery<>(request);
   }
 
+  Pattern FRAGMENT = Pattern.compile("/([^/]+)$");
+  Pattern ANCHOR = Pattern.compile("#(.*)$");
+  Pattern PAGE = Pattern.compile("/(page-\\d+)/?[^/]*$");
+
   String postFragment(String pageUrl) {
-    Pattern p = Pattern.compile("/([^/]+)$");
-    Matcher m = p.matcher(pageUrl);
+    Matcher m = FRAGMENT.matcher(pageUrl);
     return m.find() ? m.group(1) : "";
   }
 
   String postByAnchor(String pageUrl) {
-    Pattern p1 = Pattern.compile("#(.*)$");
-    Matcher m1 = p1.matcher(pageUrl);
-    return m1.find() ? m1.group(1) : pageUrl;
+    Matcher m = ANCHOR.matcher(pageUrl);
+    return m.find() ? m.group(1) : pageUrl;
+  }
+  
+  String postPage(String pageUrl) {
+    Matcher m = PAGE.matcher(pageUrl);
+    return m.find() ? "/" + m.group(1) : "";
   }
 
   URL apiServer(String urlString) {
@@ -150,7 +161,7 @@ public class SV extends HTMLLoader {
       api.setApiAddress(apiServer(thread));
 
     if (appendage == null)
-      appendage = "";
+      appendage = postPage(thread);
     else
       appendage = "/" + appendage;
 
