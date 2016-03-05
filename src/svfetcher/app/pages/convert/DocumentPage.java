@@ -36,6 +36,9 @@ public class DocumentPage extends AbstractPage {
 
   @Override
   protected javafx.scene.Node buildNode() {
+    if (data == null)
+      ready();
+    
     return new VBox(8, new Label(String.format(
                     "Document:\n\t%s\n\n"
                     + "Author:\n\t%s\n\n"
