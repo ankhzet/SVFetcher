@@ -89,9 +89,8 @@ public class SV extends HTMLLoader {
   }
 
   public DocumentResourceQuery<Post> chapter(Source source) {
-    String postUrl = source.getUrl();
-    if (postUrl.toLowerCase().startsWith("http://"))
-      postUrl = postUrl.replaceAll("^http://", "https://");
+    String postUrl = source.getUrl().replaceAll("(?i)^http://", "https://");
+    source.setUrl(postUrl);
 
     String anchor = postByAnchor(postFragment(postUrl));
 
@@ -101,14 +100,17 @@ public class SV extends HTMLLoader {
         return null;
 
       String url = request.getFullUrl().toString();
-      source.setUrl(url);
 
       String postAnchor = anchor;
       if (url.contains("#")) {
         String page = postFragment(url);
         postAnchor = postByAnchor(page);
+      } else if (anchor != null && !anchor.isEmpty()) {
+          url = Strings.trimr(url, "/") + "#" + anchor;
       }
 
+      source.setUrl(url);
+      
       Post post = postParser.fromPage(
         document.getDocumentElement(),
         postAnchor,
